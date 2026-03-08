@@ -29,6 +29,8 @@ pub struct CurrentWeather {
     pub surface_pressure: f64,
     pub uv_index: f64,
     pub is_day: u8,
+    pub visibility_km: f64,
+    pub dewpoint_c: f64,
 }
 
 pub struct HourlyWeather {
@@ -96,6 +98,8 @@ pub struct WapiCurrent {
     pub pressure_mb: f64,
     pub uv: f64,
     pub is_day: u8,
+    pub vis_km: f64,
+    pub dewpoint_c: f64,
     pub condition: WapiCondition,
     pub air_quality: Option<WapiAirQuality>,
 }

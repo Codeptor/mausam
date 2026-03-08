@@ -44,6 +44,8 @@ pub fn render(loc: &Location, weather: &WeatherResponse, air: &Option<AirQuality
             "wind_direction": weather.current.wind_direction_10m,
             "pressure": weather.current.surface_pressure,
             "uv_index": weather.current.uv_index,
+            "visibility": weather.current.visibility_km,
+            "dewpoint": weather.current.dewpoint_c,
             "is_day": weather.current.is_day != 0,
         },
         "hourly": hourly_data,

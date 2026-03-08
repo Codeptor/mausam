@@ -61,6 +61,25 @@ pub(crate) const ICON_SUNSET: &str = "\u{f059b}";
 pub(crate) const ICON_DROP: &str = "\u{f043}";
 pub(crate) const ICON_GAUGE: &str = "\u{f0241}";
 pub(crate) const ICON_LEAF: &str = "\u{f0312}";
+pub(crate) const ICON_EYE: &str = "\u{f06e}"; // eye / visibility
+pub(crate) const ICON_DEWPOINT: &str = "\u{f0595}"; // water-percent
+
+pub(crate) fn visibility_label() -> &'static str {
+    if is_imperial() {
+        "mi"
+    } else {
+        "km"
+    }
+}
+
+pub(crate) fn wind_compass(deg: f64) -> &'static str {
+    let dirs = [
+        "N", "NNE", "NE", "ENE", "E", "ESE", "SE", "SSE", "S", "SSW", "SW", "WSW", "W", "WNW",
+        "NW", "NNW",
+    ];
+    let idx = ((deg + 11.25) / 22.5) as usize % 16;
+    dirs[idx]
+}
 
 // ─── Color Helpers ────────────────────────────────────
 
@@ -194,12 +213,6 @@ pub(crate) fn weather_icon(code: u32, is_day: bool) -> (&'static str, &'static s
         96 | 99 => (ICON_THUNDER, "Thunderstorm"),
         _ => (ICON_CLOUDY, "Unknown"),
     }
-}
-
-pub(crate) fn wind_arrow(deg: f64) -> &'static str {
-    let arrows = ["↓", "↙", "←", "↖", "↑", "↗", "→", "↘"];
-    let idx = ((deg + 22.5) / 45.0) as usize % 8;
-    arrows[idx]
 }
 
 pub(crate) fn uv_label(uv: f64) -> ColoredString {

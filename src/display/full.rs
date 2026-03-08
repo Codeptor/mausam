@@ -39,15 +39,15 @@ pub fn render(loc: &Location, weather: &WeatherResponse, air: &Option<AirQuality
     divider();
     println!();
 
-    // Metrics - two rows
+    // Metrics
     println!(
-        "   {} {:<11} {} {:<10} {} {} {}",
+        "   {} {:<14} {} {:<10} {} {} {}",
         ICON_WIND.truecolor(150, 180, 210),
         format!(
             "{:.0} {} {}",
             cur.wind_speed_10m,
             wind_label(),
-            wind_arrow(cur.wind_direction_10m)
+            wind_compass(cur.wind_direction_10m),
         ),
         ICON_HUMIDITY.truecolor(80, 170, 255),
         format!("{:.0}%", cur.relative_humidity_2m),
@@ -57,13 +57,17 @@ pub fn render(loc: &Location, weather: &WeatherResponse, air: &Option<AirQuality
     );
 
     println!(
-        "   {} {:<11}",
+        "   {} {:<14} {} {:<10} {} {}",
         ICON_GAUGE.truecolor(150, 150, 170),
         if is_imperial() {
             format!("{:.2} {}", cur.surface_pressure, pressure_label())
         } else {
             format!("{:.0} {}", cur.surface_pressure, pressure_label())
         },
+        ICON_EYE.truecolor(180, 180, 200),
+        format!("{:.0} {}", cur.visibility_km, visibility_label()),
+        ICON_DEWPOINT.truecolor(100, 180, 220),
+        format!("{:.0}° dew", cur.dewpoint_c).dimmed(),
     );
 
     if let Some(air) = air {

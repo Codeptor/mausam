@@ -135,6 +135,8 @@ fn convert_response(
             surface_pressure: resp.current.pressure_mb,
             uv_index: resp.current.uv,
             is_day: resp.current.is_day,
+            visibility_km: resp.current.vis_km,
+            dewpoint_c: resp.current.dewpoint_c,
         },
         hourly: HourlyWeather {
             time: h_time,
@@ -188,6 +190,8 @@ fn apply_imperial(mut w: WeatherResponse) -> WeatherResponse {
     w.current.apparent_temperature = c_to_f(w.current.apparent_temperature);
     w.current.wind_speed_10m = kph_to_mph(w.current.wind_speed_10m);
     w.current.surface_pressure = mb_to_inhg(w.current.surface_pressure);
+    w.current.visibility_km *= 0.621371; // km → miles
+    w.current.dewpoint_c = c_to_f(w.current.dewpoint_c);
 
     w.hourly.temperature_2m = w.hourly.temperature_2m.into_iter().map(c_to_f).collect();
 

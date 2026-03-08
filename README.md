@@ -3,33 +3,37 @@
 Beautiful weather in your terminal.
 
 ```
-   ☀  37°                              Jaipur, India
+   󰖙  37°                              Jaipur, India
       Sunny · Feels like 35°
-      Comfortable, no layers needed
+      Light clothes, stay cool
       3° warmer than tomorrow
 
-   ───────────────────────────────────────────────
+  ╶─────────────────────────────────────────────────────╴
 
-   󰖝 12 km/h ↗   󰖎 42%        UV 8 Very High
+   󰖝 12 km/h NW     󰖎 42%        UV 8 Very High
+   󰉁 1012 hPa       10 km       󰖕 18° dew
+   󰌒 AQI 88 Moderate · PM2.5 30 µg/m³ · PM10 118 µg/m³
 
-   ───────────────────────────────────────────────
+  ╶─────────────────────────────────────────────────────╴
 
-   Today  ☀   26°  ▃▄▅▆▇█▇▅▃  37°
-   Tue    ⛅  24°  ▂▃▄▅▆▇▅▃▂  34°
-   Wed    ☀   25°  ▃▄▅▆▇█▆▄▂  36°
+   Mon  󰖙   26°  ▃▄▅▆▇█▇▅▃   37°
+   Tue  󰖕   24°  ▂▃▄▅▆▇▅▃▂   34°
+   Wed  󰖙   25°  ▃▄▅▆▇█▆▄▂   36°
 
-   🌅 06:32     🌇 18:28     11h 56m daylight
+   󰖜 06:32     󰖛 18:28     11h 56m daylight
 ```
 
 ## Features
 
 - True color gradients and Nerd Font icons
 - Current conditions with feels-like, clothing hint, UV index
+- Wind speed with compass direction, visibility, dew point
 - 3-day and 7-day forecast with temperature range bars
 - Hourly sparkline charts with rain probability
 - Air quality index (AQI) with PM2.5/PM10 breakdown
 - Weather alerts display
-- Multi-city comparison (`mausam london tokyo paris`)
+- Multi-word cities (`mausam new york`) and city,country (`mausam delhi, india`)
+- Multi-city comparison (`mausam london / tokyo / paris`)
 - Auto-detect location from IP
 - JSON output for scripting
 - Response caching (15 min TTL)
@@ -75,20 +79,23 @@ export MAUSAM_API_KEY=YOUR_API_KEY
 ## Usage
 
 ```
-mausam                    # Current weather (auto-detect city)
-mausam london             # Weather for London
-mausam tokyo paris        # Compare multiple cities
-mausam -f                 # Full dashboard with hourly + 7-day
-mausam -H                 # 24-hour detailed forecast
-mausam -a                 # Air quality details
-mausam -j                 # JSON output
-mausam -r                 # Skip cache, force refresh
+mausam                         # Current weather (auto-detect city)
+mausam london                  # Weather for London
+mausam new york                # Multi-word city names work naturally
+mausam delhi, india            # Disambiguate with country
+mausam london / tokyo / paris  # Compare multiple cities
+mausam -f                      # Full dashboard with hourly + 7-day
+mausam -f new delhi            # Full view for a specific city
+mausam -H                      # 24-hour detailed forecast
+mausam -a                      # Air quality details
+mausam -j                      # JSON output
+mausam -r                      # Skip cache, force refresh
 ```
 
 ### Options
 
 ```
-  [CITY]...              City name(s) — auto-detects from IP if omitted
+  [CITY]...              City name(s) — use / to separate multiple cities
   -f, --full             Full dashboard with hourly and 7-day forecast
   -H, --hourly           Show hourly forecast
   -a, --aqi              Show air quality details
@@ -107,7 +114,7 @@ Config is stored at `~/.config/mausam/config.toml` (XDG-compliant):
 
 ```toml
 api_key = "your_key_here"
-default_city = "Jaipur"
+default_city = "New Delhi"
 units = "metric"        # or "imperial"
 cache_ttl = 900         # seconds (default: 15 min)
 ```

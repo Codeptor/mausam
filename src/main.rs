@@ -12,7 +12,7 @@ use colored::Colorize;
 #[derive(Parser)]
 #[command(name = "mausam", about = "Beautiful weather in your terminal", version)]
 struct Cli {
-    /// City name(s) — auto-detects from IP if omitted
+    /// City name(s) — use / to separate multiple cities (e.g. "new york / london")
     city: Vec<String>,
 
     /// Full dashboard with hourly and 7-day forecast
@@ -177,9 +177,14 @@ async fn run() -> Result<()> {
         }
     };
 
-    // Determine cities
+    // Determine cities — join all args, split on "/" for multi-city
     let cities: Vec<String> = if !cli.city.is_empty() {
-        cli.city.clone()
+        let joined = cli.city.join(" ");
+        joined
+            .split('/')
+            .map(|s| s.trim().to_string())
+            .filter(|s| !s.is_empty())
+            .collect()
     } else {
         vec![cfg
             .default_city
