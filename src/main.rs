@@ -144,24 +144,71 @@ async fn run() -> Result<()> {
         }
     };
 
-    // Determine query
-    let query = if !cli.city.is_empty() {
-        cli.city.join(" ")
+    // Determine cities
+    let cities: Vec<String> = if !cli.city.is_empty() {
+        cli.city.clone()
     } else {
-        cfg.default_city.clone().unwrap_or_else(|| "auto:ip".to_string())
+        vec![cfg.default_city.clone().unwrap_or_else(|| "auto:ip".to_string())]
     };
 
-    // Check cache
     let cache = cache::Cache::new(cfg.cache_ttl);
     cache.cleanup();
-    let cache_key = cache::Cache::key_for(&query);
 
-    let (location, weather, air_quality) = if !cli.refresh {
-        if let Some(cached) = cache.get(&cache_key) {
-            if let Ok(data) = api::parse_cached(&cached) {
-                data
+    if cities.len() > 1 {
+        // Multi-city mode: show compact view for each city
+        for (i, city) in cities.iter().enumerate() {
+            let query = city.clone();
+            let cache_key = cache::Cache::key_for(&query);
+
+            let (location, weather, air_quality) = if !cli.refresh {
+                if let Some(cached) = cache.get(&cache_key) {
+                    if let Ok(data) = api::parse_cached(&cached) {
+                        data
+                    } else {
+                        let spinner = loading::Spinner::start();
+                        let (loc, w, aq, raw) = api::fetch_all(&api_key, &query).await?;
+                        spinner.stop();
+                        cache.set(&cache_key, &raw);
+                        (loc, w, aq)
+                    }
+                } else {
+                    let spinner = loading::Spinner::start();
+                    let (loc, w, aq, raw) = api::fetch_all(&api_key, &query).await?;
+                    spinner.stop();
+                    cache.set(&cache_key, &raw);
+                    (loc, w, aq)
+                }
             } else {
-                // Cache corrupted, fetch fresh
+                let spinner = loading::Spinner::start();
+                let (loc, w, aq, raw) = api::fetch_all(&api_key, &query).await?;
+                spinner.stop();
+                cache.set(&cache_key, &raw);
+                (loc, w, aq)
+            };
+
+            display::compact(&location, &weather, &air_quality);
+
+            if i < cities.len() - 1 {
+                println!("  {}", "─".repeat(53).dimmed());
+            }
+        }
+    } else {
+        // Single-city mode: all view modes available
+        let query = cities.into_iter().next().unwrap();
+        let cache_key = cache::Cache::key_for(&query);
+
+        let (location, weather, air_quality) = if !cli.refresh {
+            if let Some(cached) = cache.get(&cache_key) {
+                if let Ok(data) = api::parse_cached(&cached) {
+                    data
+                } else {
+                    let spinner = loading::Spinner::start();
+                    let (loc, w, aq, raw) = api::fetch_all(&api_key, &query).await?;
+                    spinner.stop();
+                    cache.set(&cache_key, &raw);
+                    (loc, w, aq)
+                }
+            } else {
                 let spinner = loading::Spinner::start();
                 let (loc, w, aq, raw) = api::fetch_all(&api_key, &query).await?;
                 spinner.stop();
@@ -174,30 +221,24 @@ async fn run() -> Result<()> {
             spinner.stop();
             cache.set(&cache_key, &raw);
             (loc, w, aq)
-        }
-    } else {
-        let spinner = loading::Spinner::start();
-        let (loc, w, aq, raw) = api::fetch_all(&api_key, &query).await?;
-        spinner.stop();
-        cache.set(&cache_key, &raw);
-        (loc, w, aq)
-    };
+        };
 
-    // Render
-    if cli.json {
-        display::json(&location, &weather, &air_quality);
-    } else if cli.full {
-        display::full(&location, &weather, &air_quality);
-    } else if cli.hourly {
-        display::hourly(&location, &weather);
-    } else if cli.aqi {
-        if let Some(ref aq) = air_quality {
-            display::aqi_detail(&location, aq);
+        // Render
+        if cli.json {
+            display::json(&location, &weather, &air_quality);
+        } else if cli.full {
+            display::full(&location, &weather, &air_quality);
+        } else if cli.hourly {
+            display::hourly(&location, &weather);
+        } else if cli.aqi {
+            if let Some(ref aq) = air_quality {
+                display::aqi_detail(&location, aq);
+            } else {
+                eprintln!("  Air quality data not available for this location.");
+            }
         } else {
-            eprintln!("  Air quality data not available for this location.");
+            display::compact(&location, &weather, &air_quality);
         }
-    } else {
-        display::compact(&location, &weather, &air_quality);
     }
 
     Ok(())
