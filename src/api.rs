@@ -9,8 +9,31 @@ pub async fn fetch_all(key: &str, query: &str) -> Result<(Location, WeatherRespo
         FORECAST_URL, key, query
     );
 
-    let response = reqwest::get(&url).await?;
-    let text = response.text().await.context("Failed to fetch weather data")?;
+    let response = reqwest::get(&url).await.map_err(|e| {
+        if e.is_connect() || e.is_timeout() {
+            anyhow::anyhow!("Could not connect. Check your internet connection.")
+        } else {
+            anyhow::anyhow!("Network error: {}", e)
+        }
+    })?;
+
+    let status = response.status();
+    let text = response.text().await.context("Failed to read response")?;
+
+    if !status.is_success() {
+        match status.as_u16() {
+            401 | 403 => anyhow::bail!("Invalid API key. Check your key at https://weatherapi.com"),
+            429 => anyhow::bail!("API rate limit reached. Try again in a few minutes."),
+            _ => {
+                // WeatherAPI returns error messages in JSON
+                if text.contains("No matching location") {
+                    anyhow::bail!("City not found. Try a different spelling.");
+                }
+                anyhow::bail!("API error ({}). Try again later.", status.as_u16());
+            }
+        }
+    }
+
     let resp: WapiResponse = serde_json::from_str(&text).context("Failed to parse weather data")?;
 
     let (location, weather, air_quality) = convert_response(resp);
