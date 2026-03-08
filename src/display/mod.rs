@@ -1,7 +1,27 @@
+use std::sync::atomic::{AtomicBool, Ordering};
+
 use chrono::{NaiveDate, Timelike};
 use colored::*;
 
 use crate::types::*;
+
+static IMPERIAL: AtomicBool = AtomicBool::new(false);
+
+pub fn set_imperial(imperial: bool) {
+    IMPERIAL.store(imperial, Ordering::Relaxed);
+}
+
+pub(crate) fn is_imperial() -> bool {
+    IMPERIAL.load(Ordering::Relaxed)
+}
+
+pub(crate) fn wind_label() -> &'static str {
+    if is_imperial() { "mph" } else { "km/h" }
+}
+
+pub(crate) fn pressure_label() -> &'static str {
+    if is_imperial() { "inHg" } else { "hPa" }
+}
 
 mod aqi;
 mod compact;
@@ -284,17 +304,19 @@ pub(crate) fn tomorrow_comparison(daily: &DailyWeather) -> Option<String> {
 }
 
 pub(crate) fn clothing_hint(feels_like: f64, rain_chance: f64, uv: f64) -> String {
-    let base = if feels_like < 0.0 {
+    // Convert to Celsius for threshold checks if imperial
+    let c = if is_imperial() { (feels_like - 32.0) * 5.0 / 9.0 } else { feels_like };
+    let base = if c < 0.0 {
         "Bundle up, it's freezing"
-    } else if feels_like < 10.0 {
+    } else if c < 10.0 {
         "Grab a warm jacket"
-    } else if feels_like < 18.0 {
+    } else if c < 18.0 {
         "Light jacket weather"
-    } else if feels_like < 25.0 {
+    } else if c < 25.0 {
         "Comfortable, no layers needed"
-    } else if feels_like < 33.0 {
+    } else if c < 33.0 {
         "Light clothes, stay cool"
-    } else if feels_like < 40.0 {
+    } else if c < 40.0 {
         "Stay hydrated, it's scorching"
     } else {
         "Dangerously hot, limit outdoor exposure"

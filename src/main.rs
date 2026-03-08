@@ -157,6 +157,11 @@ async fn run() -> Result<()> {
         vec![cfg.default_city.clone().unwrap_or_else(|| "auto:ip".to_string())]
     };
 
+    let units = cfg.units.as_deref().unwrap_or("metric");
+    if units == "imperial" {
+        display::set_imperial(true);
+    }
+
     let cache = cache::Cache::new(cfg.cache_ttl);
     cache.cleanup();
 
@@ -168,25 +173,25 @@ async fn run() -> Result<()> {
 
             let (location, weather, air_quality) = if !cli.refresh {
                 if let Some(cached) = cache.get(&cache_key) {
-                    if let Ok(data) = api::parse_cached(&cached) {
+                    if let Ok(data) = api::parse_cached(&cached, units) {
                         data
                     } else {
                         let spinner = loading::Spinner::start(use_color);
-                        let (loc, w, aq, raw) = api::fetch_all(&api_key, &query).await?;
+                        let (loc, w, aq, raw) = api::fetch_all(&api_key, &query, units).await?;
                         spinner.stop();
                         cache.set(&cache_key, &raw);
                         (loc, w, aq)
                     }
                 } else {
                     let spinner = loading::Spinner::start(use_color);
-                    let (loc, w, aq, raw) = api::fetch_all(&api_key, &query).await?;
+                    let (loc, w, aq, raw) = api::fetch_all(&api_key, &query, units).await?;
                     spinner.stop();
                     cache.set(&cache_key, &raw);
                     (loc, w, aq)
                 }
             } else {
                 let spinner = loading::Spinner::start(use_color);
-                let (loc, w, aq, raw) = api::fetch_all(&api_key, &query).await?;
+                let (loc, w, aq, raw) = api::fetch_all(&api_key, &query, units).await?;
                 spinner.stop();
                 cache.set(&cache_key, &raw);
                 (loc, w, aq)
@@ -205,25 +210,25 @@ async fn run() -> Result<()> {
 
         let (location, weather, air_quality) = if !cli.refresh {
             if let Some(cached) = cache.get(&cache_key) {
-                if let Ok(data) = api::parse_cached(&cached) {
+                if let Ok(data) = api::parse_cached(&cached, units) {
                     data
                 } else {
                     let spinner = loading::Spinner::start(use_color);
-                    let (loc, w, aq, raw) = api::fetch_all(&api_key, &query).await?;
+                    let (loc, w, aq, raw) = api::fetch_all(&api_key, &query, units).await?;
                     spinner.stop();
                     cache.set(&cache_key, &raw);
                     (loc, w, aq)
                 }
             } else {
                 let spinner = loading::Spinner::start(use_color);
-                let (loc, w, aq, raw) = api::fetch_all(&api_key, &query).await?;
+                let (loc, w, aq, raw) = api::fetch_all(&api_key, &query, units).await?;
                 spinner.stop();
                 cache.set(&cache_key, &raw);
                 (loc, w, aq)
             }
         } else {
             let spinner = loading::Spinner::start(use_color);
-            let (loc, w, aq, raw) = api::fetch_all(&api_key, &query).await?;
+            let (loc, w, aq, raw) = api::fetch_all(&api_key, &query, units).await?;
             spinner.stop();
             cache.set(&cache_key, &raw);
             (loc, w, aq)

@@ -3,7 +3,7 @@ use crate::types::*;
 
 const FORECAST_URL: &str = "http://api.weatherapi.com/v1/forecast.json";
 
-pub async fn fetch_all(key: &str, query: &str) -> Result<(Location, WeatherResponse, Option<AirQualityResponse>, String)> {
+pub async fn fetch_all(key: &str, query: &str, units: &str) -> Result<(Location, WeatherResponse, Option<AirQualityResponse>, String)> {
     let url = format!(
         "{}?key={}&q={}&days=7&aqi=yes&alerts=yes",
         FORECAST_URL, key, query
@@ -36,17 +36,18 @@ pub async fn fetch_all(key: &str, query: &str) -> Result<(Location, WeatherRespo
 
     let resp: WapiResponse = serde_json::from_str(&text).context("Failed to parse weather data")?;
 
-    let (location, weather, air_quality) = convert_response(resp);
+    let (location, weather, air_quality) = convert_response(resp, units);
 
     Ok((location, weather, air_quality, text))
 }
 
-pub fn parse_cached(text: &str) -> Result<(Location, WeatherResponse, Option<AirQualityResponse>)> {
+pub fn parse_cached(text: &str, units: &str) -> Result<(Location, WeatherResponse, Option<AirQualityResponse>)> {
     let resp: WapiResponse = serde_json::from_str(text).context("Failed to parse cached weather data")?;
-    Ok(convert_response(resp))
+    Ok(convert_response(resp, units))
 }
 
-fn convert_response(resp: WapiResponse) -> (Location, WeatherResponse, Option<AirQualityResponse>) {
+fn convert_response(resp: WapiResponse, units: &str) -> (Location, WeatherResponse, Option<AirQualityResponse>) {
+    let imperial = units == "imperial";
     let location = Location {
         name: resp.location.name,
         country: resp.location.country,
@@ -144,7 +145,38 @@ fn convert_response(resp: WapiResponse) -> (Location, WeatherResponse, Option<Ai
         }
     });
 
-    (location, weather, air_quality)
+    if imperial {
+        let weather = apply_imperial(weather);
+        (location, weather, air_quality)
+    } else {
+        (location, weather, air_quality)
+    }
+}
+
+fn c_to_f(c: f64) -> f64 {
+    c * 9.0 / 5.0 + 32.0
+}
+
+fn kph_to_mph(kph: f64) -> f64 {
+    kph * 0.621371
+}
+
+fn mb_to_inhg(mb: f64) -> f64 {
+    mb * 0.02953
+}
+
+fn apply_imperial(mut w: WeatherResponse) -> WeatherResponse {
+    w.current.temperature_2m = c_to_f(w.current.temperature_2m);
+    w.current.apparent_temperature = c_to_f(w.current.apparent_temperature);
+    w.current.wind_speed_10m = kph_to_mph(w.current.wind_speed_10m);
+    w.current.surface_pressure = mb_to_inhg(w.current.surface_pressure);
+
+    w.hourly.temperature_2m = w.hourly.temperature_2m.into_iter().map(c_to_f).collect();
+
+    w.daily.temperature_2m_max = w.daily.temperature_2m_max.into_iter().map(c_to_f).collect();
+    w.daily.temperature_2m_min = w.daily.temperature_2m_min.into_iter().map(c_to_f).collect();
+
+    w
 }
 
 // Convert WeatherAPI condition code → WMO weather code

@@ -36,7 +36,7 @@ pub fn render(loc: &Location, weather: &WeatherResponse, air: &Option<AirQuality
     println!(
         "   {} {:<11} {} {:<10} {} {} {}",
         ICON_WIND.truecolor(150, 180, 210),
-        format!("{:.0} km/h {}", cur.wind_speed_10m, wind_arrow(cur.wind_direction_10m)),
+        format!("{:.0} {} {}", cur.wind_speed_10m, wind_label(), wind_arrow(cur.wind_direction_10m)),
         ICON_HUMIDITY.truecolor(80, 170, 255),
         format!("{:.0}%", cur.relative_humidity_2m),
         "UV".dimmed(),
@@ -47,7 +47,11 @@ pub fn render(loc: &Location, weather: &WeatherResponse, air: &Option<AirQuality
     println!(
         "   {} {:<11}",
         ICON_GAUGE.truecolor(150, 150, 170),
-        format!("{:.0} hPa", cur.surface_pressure),
+        if is_imperial() {
+            format!("{:.2} {}", cur.surface_pressure, pressure_label())
+        } else {
+            format!("{:.0} {}", cur.surface_pressure, pressure_label())
+        },
     );
 
     if let Some(air) = air {
