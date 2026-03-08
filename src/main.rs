@@ -7,6 +7,7 @@ mod types;
 
 use anyhow::Result;
 use clap::Parser;
+use colored::Colorize;
 
 #[derive(Parser)]
 #[command(name = "mausam", about = "Beautiful weather in your terminal", version)]
@@ -100,11 +101,46 @@ async fn run() -> Result<()> {
     let api_key = match cfg.resolve_api_key() {
         Some(key) => key,
         None => {
-            eprintln!("  No API key configured. Run `mausam --set-key YOUR_KEY`");
-            eprintln!("  or set MAUSAM_API_KEY env var.");
-            eprintln!();
-            eprintln!("  Get a free key at https://weatherapi.com/signup");
-            std::process::exit(1);
+            // Interactive first-run setup
+            use std::io::{self, Write, BufRead};
+
+            println!();
+            println!("  {}", "Welcome to mausam!".bold());
+            println!();
+            println!("  To get started, you need a free WeatherAPI key:");
+            println!("  1. Sign up at {}", "https://weatherapi.com/signup".dimmed());
+            println!("  2. Copy your API key");
+            println!();
+            print!("  Paste your API key: ");
+            io::stdout().flush()?;
+
+            let key = io::stdin().lock().lines().next()
+                .ok_or_else(|| anyhow::anyhow!("No input"))??.trim().to_string();
+
+            if key.is_empty() {
+                anyhow::bail!("No API key provided.");
+            }
+
+            cfg.api_key = Some(key.clone());
+            cfg.save()?;
+            println!("  {} Key saved to {}", "✓".green(), config::Config::config_path().display().to_string().dimmed());
+
+            // Ask for default city
+            println!();
+            print!("  Set a default city? (leave blank for auto-detect): ");
+            io::stdout().flush()?;
+
+            let city = io::stdin().lock().lines().next()
+                .ok_or_else(|| anyhow::anyhow!("No input"))??.trim().to_string();
+
+            if !city.is_empty() {
+                cfg.default_city = Some(city.clone());
+                cfg.save()?;
+                println!("  {} Default city set to {}", "✓".green(), city.bold());
+            }
+            println!();
+
+            key
         }
     };
 
