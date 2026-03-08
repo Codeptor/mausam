@@ -9,10 +9,10 @@ use anyhow::Result;
 use clap::Parser;
 
 #[derive(Parser)]
-#[command(name = "mausam", about = "Beautiful weather in your terminal ⛅", version)]
+#[command(name = "mausam", about = "Beautiful weather in your terminal", version)]
 struct Cli {
-    /// City name (auto-detects from IP if omitted)
-    city: Option<String>,
+    /// City name(s) — auto-detects from IP if omitted
+    city: Vec<String>,
 
     /// Full dashboard with hourly and 7-day forecast
     #[arg(short, long)]
@@ -25,19 +25,122 @@ struct Cli {
     /// Show air quality details
     #[arg(short, long)]
     aqi: bool,
+
+    /// Output as JSON
+    #[arg(short, long)]
+    json: bool,
+
+    /// Force refresh, skip cache
+    #[arg(short, long)]
+    refresh: bool,
+
+    /// Disable colored output
+    #[arg(long)]
+    no_color: bool,
+
+    /// Save API key to config
+    #[arg(long, value_name = "KEY")]
+    set_key: Option<String>,
+
+    /// Save default city to config
+    #[arg(long, value_name = "CITY")]
+    set_city: Option<String>,
+
+    /// Set preferred units (metric/imperial)
+    #[arg(long, value_name = "UNITS")]
+    units: Option<String>,
+
+    /// Show current config
+    #[arg(long)]
+    config: bool,
 }
 
 #[tokio::main]
 async fn main() -> Result<()> {
     let cli = Cli::parse();
 
-    let spinner = loading::Spinner::start();
+    // Handle config commands (print and exit)
+    let mut cfg = config::Config::load();
 
-    let query = cli.city.as_deref().unwrap_or("auto:ip");
-    let (location, weather, air_quality) = api::fetch_all(query).await?;
+    if let Some(key) = &cli.set_key {
+        cfg.api_key = Some(key.clone());
+        cfg.save()?;
+        println!("  API key saved.");
+        return Ok(());
+    }
+    if let Some(city) = &cli.set_city {
+        cfg.default_city = Some(city.clone());
+        cfg.save()?;
+        println!("  Default city set to {}.", city);
+        return Ok(());
+    }
+    if let Some(units) = &cli.units {
+        cfg.units = Some(units.clone());
+        cfg.save()?;
+        println!("  Units set to {}.", units);
+        return Ok(());
+    }
+    if cli.config {
+        println!("  Config: {}", config::Config::config_path().display());
+        println!("  API key: {}", if cfg.resolve_api_key().is_some() { "set" } else { "not set" });
+        println!("  Default city: {}", cfg.default_city.as_deref().unwrap_or("auto-detect"));
+        println!("  Units: {}", cfg.units.as_deref().unwrap_or("metric"));
+        println!("  Cache TTL: {}s", cfg.cache_ttl);
+        return Ok(());
+    }
 
-    spinner.stop();
+    // Resolve API key
+    let api_key = match cfg.resolve_api_key() {
+        Some(key) => key,
+        None => {
+            eprintln!("  No API key configured. Run `mausam --set-key YOUR_KEY`");
+            eprintln!("  or set MAUSAM_API_KEY env var.");
+            eprintln!();
+            eprintln!("  Get a free key at https://weatherapi.com/signup");
+            std::process::exit(1);
+        }
+    };
 
+    // Determine query
+    let query = if !cli.city.is_empty() {
+        cli.city.join(" ")
+    } else {
+        cfg.default_city.clone().unwrap_or_else(|| "auto:ip".to_string())
+    };
+
+    // Check cache
+    let cache = cache::Cache::new(cfg.cache_ttl);
+    cache.cleanup();
+    let cache_key = cache::Cache::key_for(&query);
+
+    let (location, weather, air_quality) = if !cli.refresh {
+        if let Some(cached) = cache.get(&cache_key) {
+            if let Ok(data) = api::parse_cached(&cached) {
+                data
+            } else {
+                // Cache corrupted, fetch fresh
+                let spinner = loading::Spinner::start();
+                let (loc, w, aq, raw) = api::fetch_all(&api_key, &query).await?;
+                spinner.stop();
+                cache.set(&cache_key, &raw);
+                (loc, w, aq)
+            }
+        } else {
+            let spinner = loading::Spinner::start();
+            let (loc, w, aq, raw) = api::fetch_all(&api_key, &query).await?;
+            spinner.stop();
+            cache.set(&cache_key, &raw);
+            (loc, w, aq)
+        }
+    } else {
+        let spinner = loading::Spinner::start();
+        let (loc, w, aq, raw) = api::fetch_all(&api_key, &query).await?;
+        spinner.stop();
+        cache.set(&cache_key, &raw);
+        (loc, w, aq)
+    };
+
+    // Render
     if cli.full {
         display::full(&location, &weather, &air_quality);
     } else if cli.hourly {
