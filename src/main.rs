@@ -83,9 +83,14 @@ async fn run() -> Result<()> {
         return Ok(());
     }
     if let Some(city) = &cli.set_city {
-        cfg.default_city = Some(city.clone());
+        let mut full_city = city.clone();
+        if !cli.city.is_empty() {
+            full_city.push(' ');
+            full_city.push_str(&cli.city.join(" "));
+        }
+        cfg.default_city = Some(full_city.clone());
         cfg.save()?;
-        println!("  Default city set to {}.", city);
+        println!("  Default city set to {}.", full_city);
         return Ok(());
     }
     if let Some(units) = &cli.units {
