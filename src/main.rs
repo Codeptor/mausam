@@ -1,5 +1,7 @@
 mod api;
+mod config;
 mod display;
+mod loading;
 mod types;
 
 use anyhow::Result;
@@ -28,20 +30,12 @@ struct Cli {
 async fn main() -> Result<()> {
     let cli = Cli::parse();
 
-    let location = if let Some(ref city) = cli.city {
-        api::geocode(city).await?
-    } else {
-        api::locate_ip().await?
-    };
+    let spinner = loading::Spinner::start();
 
-    // Fetch weather + AQI in parallel
-    let (weather, air_quality) = tokio::join!(
-        api::fetch_weather(&location),
-        api::fetch_air_quality(&location),
-    );
+    let query = cli.city.as_deref().unwrap_or("auto:ip");
+    let (location, weather, air_quality) = api::fetch_all(query).await?;
 
-    let weather = weather?;
-    let air_quality = air_quality.ok(); // AQI is optional, don't fail if unavailable
+    spinner.stop();
 
     if cli.full {
         display::full(&location, &weather, &air_quality);
