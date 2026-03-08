@@ -1,17 +1,25 @@
 [package]
 name = "mausam"
-version = "0.1.0"
+version = "1.0.0"
 edition = "2021"
 description = "Beautiful weather in your terminal"
+license = "MIT"
+repository = "https://github.com/codeptor/mausam"
+keywords = ["weather", "cli", "terminal", "forecast"]
+categories = ["command-line-utilities"]
+readme = "README.md"
 
 [dependencies]
 anyhow = "1"
 chrono = "0.4"
 clap = { version = "4", features = ["derive"] }
 colored = "2"
+dirs = "6"
 reqwest = { version = "0.12", features = ["json"] }
 serde = { version = "1", features = ["derive"] }
+serde_json = "1"
 tokio = { version = "1", features = ["full"] }
+toml = "0.8"
 
 [profile.release]
 opt-level = 3
