@@ -1,0 +1,19 @@
+[package]
+name = "mausam"
+version = "0.1.0"
+edition = "2021"
+description = "Beautiful weather in your terminal"
+
+[dependencies]
+anyhow = "1"
+chrono = "0.4"
+clap = { version = "4", features = ["derive"] }
+colored = "2"
+reqwest = { version = "0.12", features = ["json"] }
+serde = { version = "1", features = ["derive"] }
+tokio = { version = "1", features = ["full"] }
+
+[profile.release]
+opt-level = 3
+lto = true
+strip = true
