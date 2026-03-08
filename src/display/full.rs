@@ -24,6 +24,9 @@ pub fn render(loc: &Location, weather: &WeatherResponse, air: &Option<AirQuality
     );
     let today_rain = daily.precipitation_probability_max.first().copied().unwrap_or(0.0);
     println!("      {}", clothing_hint(cur.apparent_temperature, today_rain, cur.uv_index).dimmed());
+    if let Some(cmp) = tomorrow_comparison(daily) {
+        println!("      {}", cmp.dimmed());
+    }
 
     println!();
     divider();

@@ -266,6 +266,23 @@ pub(crate) fn format_hour_human(h: usize) -> String {
     }
 }
 
+pub(crate) fn tomorrow_comparison(daily: &DailyWeather) -> Option<String> {
+    if daily.temperature_2m_max.len() < 2 {
+        return None;
+    }
+    let today_high = daily.temperature_2m_max[0];
+    let tomorrow_high = daily.temperature_2m_max[1];
+    let diff = (today_high - tomorrow_high).round() as i32;
+    if diff.abs() < 2 {
+        return None;
+    }
+    if diff > 0 {
+        Some(format!("{}° warmer than tomorrow", diff))
+    } else {
+        Some(format!("{}° cooler than tomorrow", diff.abs()))
+    }
+}
+
 pub(crate) fn clothing_hint(feels_like: f64, rain_chance: f64, uv: f64) -> String {
     let base = if feels_like < 0.0 {
         "Bundle up, it's freezing"
