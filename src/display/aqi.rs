@@ -31,7 +31,11 @@ pub fn render(loc: &Location, air: &AirQualityResponse) {
         })
         .collect();
 
-    println!("   {} {}", bar, format!("{:.0}", cur.us_aqi).truecolor(r, g, b).bold());
+    println!(
+        "   {} {}",
+        bar,
+        format!("{:.0}", cur.us_aqi).truecolor(r, g, b).bold()
+    );
     println!("   {}", aqi_label(cur.us_aqi));
 
     println!();

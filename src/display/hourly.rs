@@ -33,18 +33,16 @@ pub fn render(loc: &Location, weather: &WeatherResponse) {
 
         let is_now = i == now;
         let time_str = if is_now {
-            format!(" {} ", hour).on_truecolor(60, 60, 80).white().bold().to_string()
+            format!(" {} ", hour)
+                .on_truecolor(60, 60, 80)
+                .white()
+                .bold()
+                .to_string()
         } else {
             format!("  {}  ", hour).dimmed().to_string()
         };
 
-        println!(
-            "  {}{}  {}{}",
-            time_str,
-            icon,
-            temp_colored(temp),
-            rain_str,
-        );
+        println!("  {}{}  {}{}", time_str, icon, temp_colored(temp), rain_str,);
     }
 
     println!();

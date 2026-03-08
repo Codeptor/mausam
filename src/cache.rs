@@ -41,10 +41,7 @@ impl Cache {
     }
 
     pub fn key_for(query: &str) -> String {
-        query
-            .to_lowercase()
-            .replace(' ', "_")
-            .replace(':', "_")
+        query.to_lowercase().replace([' ', ':'], "_")
     }
 
     pub fn cleanup(&self) {

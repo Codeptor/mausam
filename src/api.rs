@@ -1,9 +1,18 @@
-use anyhow::{Context, Result};
 use crate::types::*;
+use anyhow::{Context, Result};
 
 const FORECAST_URL: &str = "http://api.weatherapi.com/v1/forecast.json";
 
-pub async fn fetch_all(key: &str, query: &str, units: &str) -> Result<(Location, WeatherResponse, Option<AirQualityResponse>, String)> {
+pub async fn fetch_all(
+    key: &str,
+    query: &str,
+    units: &str,
+) -> Result<(
+    Location,
+    WeatherResponse,
+    Option<AirQualityResponse>,
+    String,
+)> {
     let url = format!(
         "{}?key={}&q={}&days=7&aqi=yes&alerts=yes",
         FORECAST_URL, key, query
@@ -41,12 +50,19 @@ pub async fn fetch_all(key: &str, query: &str, units: &str) -> Result<(Location,
     Ok((location, weather, air_quality, text))
 }
 
-pub fn parse_cached(text: &str, units: &str) -> Result<(Location, WeatherResponse, Option<AirQualityResponse>)> {
-    let resp: WapiResponse = serde_json::from_str(text).context("Failed to parse cached weather data")?;
+pub fn parse_cached(
+    text: &str,
+    units: &str,
+) -> Result<(Location, WeatherResponse, Option<AirQualityResponse>)> {
+    let resp: WapiResponse =
+        serde_json::from_str(text).context("Failed to parse cached weather data")?;
     Ok(convert_response(resp, units))
 }
 
-fn convert_response(resp: WapiResponse, units: &str) -> (Location, WeatherResponse, Option<AirQualityResponse>) {
+fn convert_response(
+    resp: WapiResponse,
+    units: &str,
+) -> (Location, WeatherResponse, Option<AirQualityResponse>) {
     let imperial = units == "imperial";
     let location = Location {
         name: resp.location.name,
@@ -93,15 +109,19 @@ fn convert_response(resp: WapiResponse, units: &str) -> (Location, WeatherRespon
     }
 
     // Convert alerts
-    let alerts: Vec<Alert> = resp.alerts
-        .map(|a| a.alert.into_iter().filter_map(|wa| {
-            Some(Alert {
-                headline: wa.headline.unwrap_or_default(),
-                severity: wa.severity.unwrap_or_default(),
-                event: wa.event.unwrap_or_default(),
-                expires: wa.expires.unwrap_or_default(),
-            })
-        }).collect())
+    let alerts: Vec<Alert> = resp
+        .alerts
+        .map(|a| {
+            a.alert
+                .into_iter()
+                .map(|wa| Alert {
+                    headline: wa.headline.unwrap_or_default(),
+                    severity: wa.severity.unwrap_or_default(),
+                    event: wa.event.unwrap_or_default(),
+                    expires: wa.expires.unwrap_or_default(),
+                })
+                .collect()
+        })
         .unwrap_or_default();
 
     let weather = WeatherResponse {
@@ -135,14 +155,12 @@ fn convert_response(resp: WapiResponse, units: &str) -> (Location, WeatherRespon
         alerts,
     };
 
-    let air_quality = resp.current.air_quality.map(|aq| {
-        AirQualityResponse {
-            current: CurrentAirQuality {
-                us_aqi: pm25_to_aqi(aq.pm2_5),
-                pm2_5: aq.pm2_5,
-                pm10: aq.pm10,
-            },
-        }
+    let air_quality = resp.current.air_quality.map(|aq| AirQualityResponse {
+        current: CurrentAirQuality {
+            us_aqi: pm25_to_aqi(aq.pm2_5),
+            pm2_5: aq.pm2_5,
+            pm10: aq.pm10,
+        },
     });
 
     if imperial {
@@ -180,33 +198,33 @@ fn apply_imperial(mut w: WeatherResponse) -> WeatherResponse {
 }
 
 // Convert WeatherAPI condition code → WMO weather code
-fn wapi_to_wmo(code: u32, is_day: bool) -> u32 {
+fn wapi_to_wmo(code: u32, _is_day: bool) -> u32 {
     match code {
-        1000 => if is_day { 0 } else { 0 }, // Clear
-        1003 => 2,                           // Partly cloudy
-        1006 => 3,                           // Cloudy
-        1009 => 3,                           // Overcast
-        1030 | 1135 => 45,                   // Mist / Fog
-        1147 => 48,                          // Freezing fog
-        1150 | 1153 => 51,                   // Drizzle
-        1168 | 1171 => 56,                   // Freezing drizzle
-        1180 | 1183 => 61,                   // Light rain
-        1186 | 1189 => 63,                   // Moderate rain
-        1192 | 1195 => 65,                   // Heavy rain
-        1198 | 1204 => 66,                   // Freezing rain / sleet
-        1201 | 1207 => 67,                   // Heavy freezing rain
-        1063 | 1240 => 80,                   // Rain showers
-        1243 => 81,                          // Heavy rain showers
-        1246 => 82,                          // Torrential showers
-        1066 | 1210 | 1213 => 71,            // Light snow
-        1114 | 1216 | 1219 => 73,            // Moderate snow
-        1117 | 1222 | 1225 => 75,            // Heavy snow
-        1237 | 1261 | 1264 => 77,            // Ice pellets
-        1069 | 1249 | 1252 | 1255 => 85,     // Snow/sleet showers
-        1258 => 86,                          // Heavy snow showers
-        1072 | 1087 | 1273 => 95,            // Thunder
-        1276 | 1279 | 1282 => 96,            // Heavy thunder
-        _ => 3,                              // Fallback: cloudy
+        1000 => 0,                       // Clear
+        1003 => 2,                       // Partly cloudy
+        1006 => 3,                       // Cloudy
+        1009 => 3,                       // Overcast
+        1030 | 1135 => 45,               // Mist / Fog
+        1147 => 48,                      // Freezing fog
+        1150 | 1153 => 51,               // Drizzle
+        1168 | 1171 => 56,               // Freezing drizzle
+        1180 | 1183 => 61,               // Light rain
+        1186 | 1189 => 63,               // Moderate rain
+        1192 | 1195 => 65,               // Heavy rain
+        1198 | 1204 => 66,               // Freezing rain / sleet
+        1201 | 1207 => 67,               // Heavy freezing rain
+        1063 | 1240 => 80,               // Rain showers
+        1243 => 81,                      // Heavy rain showers
+        1246 => 82,                      // Torrential showers
+        1066 | 1210 | 1213 => 71,        // Light snow
+        1114 | 1216 | 1219 => 73,        // Moderate snow
+        1117 | 1222 | 1225 => 75,        // Heavy snow
+        1237 | 1261 | 1264 => 77,        // Ice pellets
+        1069 | 1249 | 1252 | 1255 => 85, // Snow/sleet showers
+        1258 => 86,                      // Heavy snow showers
+        1072 | 1087 | 1273 => 95,        // Thunder
+        1276 | 1279 | 1282 => 96,        // Heavy thunder
+        _ => 3,                          // Fallback: cloudy
     }
 }
 

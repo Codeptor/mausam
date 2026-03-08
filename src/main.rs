@@ -96,8 +96,18 @@ async fn run() -> Result<()> {
     }
     if cli.config {
         println!("  Config: {}", config::Config::config_path().display());
-        println!("  API key: {}", if cfg.resolve_api_key().is_some() { "set" } else { "not set" });
-        println!("  Default city: {}", cfg.default_city.as_deref().unwrap_or("auto-detect"));
+        println!(
+            "  API key: {}",
+            if cfg.resolve_api_key().is_some() {
+                "set"
+            } else {
+                "not set"
+            }
+        );
+        println!(
+            "  Default city: {}",
+            cfg.default_city.as_deref().unwrap_or("auto-detect")
+        );
         println!("  Units: {}", cfg.units.as_deref().unwrap_or("metric"));
         println!("  Cache TTL: {}s", cfg.cache_ttl);
         return Ok(());
@@ -108,20 +118,28 @@ async fn run() -> Result<()> {
         Some(key) => key,
         None => {
             // Interactive first-run setup
-            use std::io::{self, Write, BufRead};
+            use std::io::{self, BufRead, Write};
 
             println!();
             println!("  {}", "Welcome to mausam!".bold());
             println!();
             println!("  To get started, you need a free WeatherAPI key:");
-            println!("  1. Sign up at {}", "https://weatherapi.com/signup".dimmed());
+            println!(
+                "  1. Sign up at {}",
+                "https://weatherapi.com/signup".dimmed()
+            );
             println!("  2. Copy your API key");
             println!();
             print!("  Paste your API key: ");
             io::stdout().flush()?;
 
-            let key = io::stdin().lock().lines().next()
-                .ok_or_else(|| anyhow::anyhow!("No input"))??.trim().to_string();
+            let key = io::stdin()
+                .lock()
+                .lines()
+                .next()
+                .ok_or_else(|| anyhow::anyhow!("No input"))??
+                .trim()
+                .to_string();
 
             if key.is_empty() {
                 anyhow::bail!("No API key provided.");
@@ -129,15 +147,24 @@ async fn run() -> Result<()> {
 
             cfg.api_key = Some(key.clone());
             cfg.save()?;
-            println!("  {} Key saved to {}", "✓".green(), config::Config::config_path().display().to_string().dimmed());
+            println!(
+                "  {} Key saved to {}",
+                "✓".green(),
+                config::Config::config_path().display().to_string().dimmed()
+            );
 
             // Ask for default city
             println!();
             print!("  Set a default city? (leave blank for auto-detect): ");
             io::stdout().flush()?;
 
-            let city = io::stdin().lock().lines().next()
-                .ok_or_else(|| anyhow::anyhow!("No input"))??.trim().to_string();
+            let city = io::stdin()
+                .lock()
+                .lines()
+                .next()
+                .ok_or_else(|| anyhow::anyhow!("No input"))??
+                .trim()
+                .to_string();
 
             if !city.is_empty() {
                 cfg.default_city = Some(city.clone());
@@ -154,7 +181,10 @@ async fn run() -> Result<()> {
     let cities: Vec<String> = if !cli.city.is_empty() {
         cli.city.clone()
     } else {
-        vec![cfg.default_city.clone().unwrap_or_else(|| "auto:ip".to_string())]
+        vec![cfg
+            .default_city
+            .clone()
+            .unwrap_or_else(|| "auto:ip".to_string())]
     };
 
     let units = cfg.units.as_deref().unwrap_or("metric");

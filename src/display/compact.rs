@@ -21,8 +21,15 @@ pub fn render(loc: &Location, weather: &WeatherResponse, air: &Option<AirQuality
         "·".dimmed(),
         format!("Feels like {:.0}°", cur.apparent_temperature).dimmed()
     );
-    let today_rain = daily.precipitation_probability_max.first().copied().unwrap_or(0.0);
-    println!("      {}", clothing_hint(cur.apparent_temperature, today_rain, cur.uv_index).dimmed());
+    let today_rain = daily
+        .precipitation_probability_max
+        .first()
+        .copied()
+        .unwrap_or(0.0);
+    println!(
+        "      {}",
+        clothing_hint(cur.apparent_temperature, today_rain, cur.uv_index).dimmed()
+    );
     if let Some(cmp) = tomorrow_comparison(daily) {
         println!("      {}", cmp.dimmed());
     }
@@ -35,7 +42,12 @@ pub fn render(loc: &Location, weather: &WeatherResponse, air: &Option<AirQuality
     println!(
         "   {} {:<11} {} {:<10} {} {} {}",
         ICON_WIND.truecolor(150, 180, 210),
-        format!("{:.0} {} {}", cur.wind_speed_10m, wind_label(), wind_arrow(cur.wind_direction_10m)),
+        format!(
+            "{:.0} {} {}",
+            cur.wind_speed_10m,
+            wind_label(),
+            wind_arrow(cur.wind_direction_10m)
+        ),
         ICON_HUMIDITY.truecolor(80, 170, 255),
         format!("{:.0}%", cur.relative_humidity_2m),
         "UV".dimmed(),
@@ -48,9 +60,15 @@ pub fn render(loc: &Location, weather: &WeatherResponse, air: &Option<AirQuality
         println!(
             "   {} {} {} {}",
             ICON_LEAF.truecolor(r, g, b),
-            format!("AQI {:.0}", air.current.us_aqi).truecolor(r, g, b).bold(),
+            format!("AQI {:.0}", air.current.us_aqi)
+                .truecolor(r, g, b)
+                .bold(),
             aqi_label(air.current.us_aqi),
-            format!("· PM2.5 {:.0} · PM10 {:.0}", air.current.pm2_5, air.current.pm10).dimmed(),
+            format!(
+                "· PM2.5 {:.0} · PM10 {:.0}",
+                air.current.pm2_5, air.current.pm10
+            )
+            .dimmed(),
         );
     }
 

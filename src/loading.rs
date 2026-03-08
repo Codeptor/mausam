@@ -52,7 +52,7 @@ impl Spinner {
                 frame = (frame + 1) % SPINNER_FRAMES.len();
                 tick += 1;
                 // Cycle weather icon every ~600ms (7-8 spinner frames)
-                if tick % 8 == 0 {
+                if tick.is_multiple_of(8) {
                     icon_idx = (icon_idx + 1) % WEATHER_ICONS.len();
                 }
             }

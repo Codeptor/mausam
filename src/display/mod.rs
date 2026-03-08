@@ -16,11 +16,19 @@ pub(crate) fn is_imperial() -> bool {
 }
 
 pub(crate) fn wind_label() -> &'static str {
-    if is_imperial() { "mph" } else { "km/h" }
+    if is_imperial() {
+        "mph"
+    } else {
+        "km/h"
+    }
 }
 
 pub(crate) fn pressure_label() -> &'static str {
-    if is_imperial() { "inHg" } else { "hPa" }
+    if is_imperial() {
+        "inHg"
+    } else {
+        "hPa"
+    }
 }
 
 mod aqi;
@@ -172,7 +180,7 @@ pub(crate) fn weather_icon(code: u32, is_day: bool) -> (&'static str, &'static s
         66 | 67 => (ICON_RAINY, "Freezing rain"),
         71 | 73 | 75 => (ICON_SNOWY, "Snowfall"),
         77 => (ICON_SNOWY, "Snow grains"),
-        80 | 81 | 82 => (ICON_RAINY, "Showers"),
+        80..=82 => (ICON_RAINY, "Showers"),
         85 | 86 => (ICON_SNOWY, "Snow showers"),
         95 => (ICON_THUNDER, "Thunderstorm"),
         96 | 99 => (ICON_THUNDER, "Thunderstorm"),
@@ -305,7 +313,11 @@ pub(crate) fn tomorrow_comparison(daily: &DailyWeather) -> Option<String> {
 
 pub(crate) fn clothing_hint(feels_like: f64, rain_chance: f64, uv: f64) -> String {
     // Convert to Celsius for threshold checks if imperial
-    let c = if is_imperial() { (feels_like - 32.0) * 5.0 / 9.0 } else { feels_like };
+    let c = if is_imperial() {
+        (feels_like - 32.0) * 5.0 / 9.0
+    } else {
+        feels_like
+    };
     let base = if c < 0.0 {
         "Bundle up, it's freezing"
     } else if c < 10.0 {

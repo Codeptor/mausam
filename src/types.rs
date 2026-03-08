@@ -6,7 +6,9 @@ use serde::Deserialize;
 pub struct Location {
     pub name: String,
     pub country: String,
+    #[allow(dead_code)]
     pub latitude: f64,
+    #[allow(dead_code)]
     pub longitude: f64,
 }
 
