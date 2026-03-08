@@ -67,6 +67,12 @@ async fn main() {
 async fn run() -> Result<()> {
     let cli = Cli::parse();
 
+    // Respect NO_COLOR env var and --no-color flag
+    let use_color = !cli.no_color && std::env::var("NO_COLOR").is_err();
+    if !use_color {
+        colored::control::set_override(false);
+    }
+
     // Handle config commands (print and exit)
     let mut cfg = config::Config::load();
 
@@ -165,21 +171,21 @@ async fn run() -> Result<()> {
                     if let Ok(data) = api::parse_cached(&cached) {
                         data
                     } else {
-                        let spinner = loading::Spinner::start();
+                        let spinner = loading::Spinner::start(use_color);
                         let (loc, w, aq, raw) = api::fetch_all(&api_key, &query).await?;
                         spinner.stop();
                         cache.set(&cache_key, &raw);
                         (loc, w, aq)
                     }
                 } else {
-                    let spinner = loading::Spinner::start();
+                    let spinner = loading::Spinner::start(use_color);
                     let (loc, w, aq, raw) = api::fetch_all(&api_key, &query).await?;
                     spinner.stop();
                     cache.set(&cache_key, &raw);
                     (loc, w, aq)
                 }
             } else {
-                let spinner = loading::Spinner::start();
+                let spinner = loading::Spinner::start(use_color);
                 let (loc, w, aq, raw) = api::fetch_all(&api_key, &query).await?;
                 spinner.stop();
                 cache.set(&cache_key, &raw);
@@ -202,21 +208,21 @@ async fn run() -> Result<()> {
                 if let Ok(data) = api::parse_cached(&cached) {
                     data
                 } else {
-                    let spinner = loading::Spinner::start();
+                    let spinner = loading::Spinner::start(use_color);
                     let (loc, w, aq, raw) = api::fetch_all(&api_key, &query).await?;
                     spinner.stop();
                     cache.set(&cache_key, &raw);
                     (loc, w, aq)
                 }
             } else {
-                let spinner = loading::Spinner::start();
+                let spinner = loading::Spinner::start(use_color);
                 let (loc, w, aq, raw) = api::fetch_all(&api_key, &query).await?;
                 spinner.stop();
                 cache.set(&cache_key, &raw);
                 (loc, w, aq)
             }
         } else {
-            let spinner = loading::Spinner::start();
+            let spinner = loading::Spinner::start(use_color);
             let (loc, w, aq, raw) = api::fetch_all(&api_key, &query).await?;
             spinner.stop();
             cache.set(&cache_key, &raw);
