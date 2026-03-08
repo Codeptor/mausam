@@ -266,6 +266,24 @@ pub(crate) fn format_hour_human(h: usize) -> String {
     }
 }
 
+pub(crate) fn render_alerts(alerts: &[Alert]) {
+    for alert in alerts {
+        let color = match alert.severity.to_lowercase().as_str() {
+            "extreme" => (255, 50, 50),
+            "severe" => (255, 140, 0),
+            _ => (230, 200, 0),
+        };
+        println!(
+            "   {} {}",
+            "!".truecolor(color.0, color.1, color.2).bold(),
+            alert.headline.truecolor(color.0, color.1, color.2),
+        );
+    }
+    if !alerts.is_empty() {
+        println!();
+    }
+}
+
 pub(crate) fn divider() {
     println!(
         "  {}",

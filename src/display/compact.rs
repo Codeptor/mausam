@@ -6,6 +6,7 @@ pub fn render(loc: &Location, weather: &WeatherResponse, air: &Option<AirQuality
     let (icon, desc) = weather_icon(cur.weather_code, cur.is_day != 0);
 
     println!();
+    render_alerts(&weather.alerts);
 
     // Main temperature + location
     println!(

@@ -14,7 +14,6 @@ pub struct WeatherResponse {
     pub current: CurrentWeather,
     pub hourly: HourlyWeather,
     pub daily: DailyWeather,
-    #[allow(dead_code)]
     pub alerts: Vec<Alert>,
 }
 
