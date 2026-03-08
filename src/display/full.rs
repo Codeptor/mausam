@@ -9,9 +9,9 @@ pub fn render(loc: &Location, weather: &WeatherResponse, air: &Option<AirQuality
     println!();
     render_alerts(&weather.alerts);
 
-    // Main temperature + location
+    // Header
     println!(
-        "   {}  {}                              {}",
+        "   {}  {}  {}",
         icon.truecolor(255, 200, 80),
         temp_colored(cur.temperature_2m),
         format!("{}, {}", loc.name, loc.country).bold()
@@ -39,35 +39,40 @@ pub fn render(loc: &Location, weather: &WeatherResponse, air: &Option<AirQuality
     divider();
     println!();
 
-    // Metrics
+    // Metrics — 3-column grid
+    let wind_text = format!(
+        "{:.0} {} {}",
+        cur.wind_speed_10m,
+        wind_label(),
+        wind_compass(cur.wind_direction_10m),
+    );
+    let hum_text = format!("{:.0}%", cur.relative_humidity_2m);
+    let pressure_text = if is_imperial() {
+        format!("{:.2} {}", cur.surface_pressure, pressure_label())
+    } else {
+        format!("{:.0} {}", cur.surface_pressure, pressure_label())
+    };
+    let vis_text = format!("{:.0} {}", cur.visibility_km, visibility_label());
+    let dew_text = format!("{:.0}° dew", cur.dewpoint_c);
+
     println!(
-        "   {} {:<14} {} {:<10} {} {} {}",
+        "   {} {:<16} {} {:<12} {} {} {}",
         ICON_WIND.truecolor(150, 180, 210),
-        format!(
-            "{:.0} {} {}",
-            cur.wind_speed_10m,
-            wind_label(),
-            wind_compass(cur.wind_direction_10m),
-        ),
+        wind_text,
         ICON_HUMIDITY.truecolor(80, 170, 255),
-        format!("{:.0}%", cur.relative_humidity_2m),
+        hum_text,
         "UV".dimmed(),
         format!("{:.0}", cur.uv_index).bold(),
         uv_label(cur.uv_index),
     );
-
     println!(
-        "   {} {:<14} {} {:<10} {} {}",
+        "   {} {:<16} {} {:<12} {} {}",
         ICON_GAUGE.truecolor(150, 150, 170),
-        if is_imperial() {
-            format!("{:.2} {}", cur.surface_pressure, pressure_label())
-        } else {
-            format!("{:.0} {}", cur.surface_pressure, pressure_label())
-        },
+        pressure_text,
         ICON_EYE.truecolor(180, 180, 200),
-        format!("{:.0} {}", cur.visibility_km, visibility_label()),
+        vis_text,
         ICON_DEWPOINT.truecolor(100, 180, 220),
-        format!("{:.0}° dew", cur.dewpoint_c).dimmed(),
+        dew_text.dimmed(),
     );
 
     if let Some(air) = air {
@@ -80,7 +85,7 @@ pub fn render(loc: &Location, weather: &WeatherResponse, air: &Option<AirQuality
                 .bold(),
             aqi_label(air.current.us_aqi),
             format!(
-                "· PM2.5 {:.0} µg/m³ · PM10 {:.0} µg/m³",
+                "· PM2.5 {:.0} · PM10 {:.0}",
                 air.current.pm2_5, air.current.pm10
             )
             .dimmed(),
@@ -116,7 +121,7 @@ pub fn render(loc: &Location, weather: &WeatherResponse, air: &Option<AirQuality
         }
     }
 
-    let col = 7;
+    let col = 6;
     let hour_str: String = hours.iter().map(|h| format!("{:^col$}", h)).collect();
     let spark_str = colored_sparkline(&temps, col);
     let temp_str: String = temps
@@ -130,14 +135,12 @@ pub fn render(loc: &Location, weather: &WeatherResponse, air: &Option<AirQuality
         .collect::<String>();
 
     println!("   {}", hour_str.dimmed());
-    println!();
     println!("   {}", spark_str);
     println!("   {}", temp_str);
 
     // Only show rain row if there's meaningful rain
     let has_rain = rains.iter().any(|r| *r > 0.0);
     if has_rain {
-        println!();
         let rain_str: String = rains
             .iter()
             .map(|r| {
@@ -181,11 +184,11 @@ pub fn render(loc: &Location, weather: &WeatherResponse, air: &Option<AirQuality
             daily.temperature_2m_max[i],
             abs_min,
             abs_max,
-            20,
+            26,
         );
         let rain = rain_indicator(daily.precipitation_probability_max[i]);
         println!(
-            "   {}  {}  {}  {}  {}  {}",
+            "   {}  {} {} {} {} {}",
             day_name(&daily.time[i]).dimmed(),
             d_icon,
             temp_colored_dim(daily.temperature_2m_min[i]),
