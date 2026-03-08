@@ -98,9 +98,17 @@ pub(crate) fn temp_colored(temp: f64) -> ColoredString {
     format!("{:.0}°", temp).truecolor(r, g, b).bold()
 }
 
-pub(crate) fn temp_colored_dim(temp: f64) -> ColoredString {
+pub(crate) fn temp_colored_dim(temp: f64) -> String {
     let (r, g, b) = temp_to_rgb(temp);
-    format!("{:.0}°", temp).truecolor(r, g, b)
+    let visible = format!("{:.0}°", temp);
+    let colored = visible.truecolor(r, g, b).to_string();
+    let width = 4; // enough for "-XX°"
+    let vis_len = visible.chars().count();
+    if vis_len < width {
+        format!("{}{}", " ".repeat(width - vis_len), colored)
+    } else {
+        colored
+    }
 }
 
 pub(crate) fn gradient_bar(min: f64, max: f64, abs_min: f64, abs_max: f64, width: usize) -> String {
