@@ -72,6 +72,7 @@ pub struct DailyWeather {
     pub sunrise: Vec<String>,
     pub sunset: Vec<String>,
     pub precipitation_probability_max: Vec<f64>,
+    #[allow(dead_code)]
     pub uv_index_max: Vec<f64>,
 }
 
