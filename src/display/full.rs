@@ -1,0 +1,185 @@
+use super::*;
+
+pub fn render(loc: &Location, weather: &WeatherResponse, air: &Option<AirQualityResponse>) {
+    let cur = &weather.current;
+    let daily = &weather.daily;
+    let hourly = &weather.hourly;
+    let (icon, desc) = weather_icon(cur.weather_code, cur.is_day != 0);
+
+    println!();
+
+    // Main temperature + location
+    println!(
+        "   {}  {}                              {}",
+        icon.truecolor(255, 200, 80),
+        temp_colored(cur.temperature_2m),
+        format!("{}, {}", loc.name, loc.country).bold()
+    );
+    println!(
+        "      {} {} {}",
+        desc.white(),
+        "·".dimmed(),
+        format!("Feels like {:.0}°", cur.apparent_temperature).dimmed()
+    );
+
+    println!();
+    divider();
+    println!();
+
+    // Metrics - two rows
+    println!(
+        "   {} {:<11} {} {:<10} {} {} {}",
+        ICON_WIND.truecolor(150, 180, 210),
+        format!("{:.0} km/h {}", cur.wind_speed_10m, wind_arrow(cur.wind_direction_10m)),
+        ICON_HUMIDITY.truecolor(80, 170, 255),
+        format!("{:.0}%", cur.relative_humidity_2m),
+        "UV".dimmed(),
+        format!("{:.0}", cur.uv_index).bold(),
+        uv_label(cur.uv_index),
+    );
+
+    println!(
+        "   {} {:<11}",
+        ICON_GAUGE.truecolor(150, 150, 170),
+        format!("{:.0} hPa", cur.surface_pressure),
+    );
+
+    if let Some(air) = air {
+        let (r, g, b) = aqi_color(air.current.us_aqi);
+        println!(
+            "   {} {} {} {}",
+            ICON_LEAF.truecolor(r, g, b),
+            format!("AQI {:.0}", air.current.us_aqi).truecolor(r, g, b).bold(),
+            aqi_label(air.current.us_aqi),
+            format!("· PM2.5 {:.0} µg/m³ · PM10 {:.0} µg/m³", air.current.pm2_5, air.current.pm10)
+                .dimmed(),
+        );
+    }
+
+    // Hourly sparkline
+    println!();
+    divider();
+    println!();
+    println!("   {}", "Next 24 Hours".bold());
+    println!();
+
+    let now = current_hour();
+    let step = 3;
+    let count = 8;
+
+    let mut hours: Vec<String> = Vec::new();
+    let mut temps: Vec<f64> = Vec::new();
+    let mut rains: Vec<f64> = Vec::new();
+
+    for j in 0..count {
+        let idx = now + j * step;
+        if idx < hourly.time.len() {
+            if j == 0 {
+                hours.push("Now".to_string());
+            } else {
+                let h = (now + j * step) % 24;
+                hours.push(format_hour_human(h));
+            }
+            temps.push(hourly.temperature_2m[idx]);
+            rains.push(hourly.precipitation_probability[idx]);
+        }
+    }
+
+    let col = 7;
+    let hour_str: String = hours.iter().map(|h| format!("{:^col$}", h)).collect();
+    let spark_str = colored_sparkline(&temps, col);
+    let temp_str: String = temps
+        .iter()
+        .map(|t| {
+            let (r, g, b) = temp_to_rgb(*t);
+            let visible = format!("{:.0}°", t);
+            let colored = visible.truecolor(r, g, b).to_string();
+            center_ansi(&colored, visible.chars().count(), col)
+        })
+        .collect::<String>();
+
+    println!("   {}", hour_str.dimmed());
+    println!();
+    println!("   {}", spark_str);
+    println!("   {}", temp_str);
+
+    // Only show rain row if there's meaningful rain
+    let has_rain = rains.iter().any(|r| *r > 0.0);
+    if has_rain {
+        println!();
+        let rain_str: String = rains
+            .iter()
+            .map(|r| {
+                if *r > 30.0 {
+                    let visible = format!("{:.0}%", r);
+                    let colored = visible.truecolor(100, 160, 255).to_string();
+                    center_ansi(&colored, visible.chars().count(), col)
+                } else if *r > 0.0 {
+                    let visible = format!("{:.0}%", r);
+                    let colored = visible.dimmed().to_string();
+                    center_ansi(&colored, visible.chars().count(), col)
+                } else {
+                    " ".repeat(col)
+                }
+            })
+            .collect::<String>();
+        println!("   {}", rain_str);
+    }
+
+    // 7-day forecast
+    println!();
+    divider();
+    println!();
+    println!("   {}", "7-Day".bold());
+    println!();
+
+    let days = 7.min(daily.time.len());
+    let abs_min = daily.temperature_2m_min[..days]
+        .iter()
+        .copied()
+        .fold(f64::INFINITY, f64::min);
+    let abs_max = daily.temperature_2m_max[..days]
+        .iter()
+        .copied()
+        .fold(f64::NEG_INFINITY, f64::max);
+
+    for i in 0..days {
+        let (d_icon, _) = weather_icon(daily.weather_code[i], true);
+        let bar = gradient_bar(
+            daily.temperature_2m_min[i],
+            daily.temperature_2m_max[i],
+            abs_min,
+            abs_max,
+            20,
+        );
+        let rain = rain_indicator(daily.precipitation_probability_max[i]);
+        println!(
+            "   {}  {}  {}  {}  {}  {}",
+            day_name(&daily.time[i]).dimmed(),
+            d_icon,
+            temp_colored_dim(daily.temperature_2m_min[i]),
+            bar,
+            temp_colored_dim(daily.temperature_2m_max[i]),
+            rain,
+        );
+    }
+
+    // Sunrise/sunset + daylight
+    if !daily.sunrise.is_empty() {
+        let rise = format_time(&daily.sunrise[0]);
+        let set = format_time(&daily.sunset[0]);
+        let daylight = daylight_str(&rise, &set);
+
+        println!();
+        println!(
+            "   {} {}     {} {}     {}",
+            ICON_SUNRISE.truecolor(255, 180, 50),
+            rise.dimmed(),
+            ICON_SUNSET.truecolor(255, 100, 50),
+            set.dimmed(),
+            daylight.dimmed(),
+        );
+    }
+
+    println!();
+}

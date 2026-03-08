@@ -184,7 +184,9 @@ async fn run() -> Result<()> {
     };
 
     // Render
-    if cli.full {
+    if cli.json {
+        display::json(&location, &weather, &air_quality);
+    } else if cli.full {
         display::full(&location, &weather, &air_quality);
     } else if cli.hourly {
         display::hourly(&location, &weather);
