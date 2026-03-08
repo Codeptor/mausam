@@ -1,4 +1,5 @@
 mod api;
+mod cache;
 mod config;
 mod display;
 mod loading;
