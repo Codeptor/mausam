@@ -266,6 +266,32 @@ pub(crate) fn format_hour_human(h: usize) -> String {
     }
 }
 
+pub(crate) fn clothing_hint(feels_like: f64, rain_chance: f64, uv: f64) -> String {
+    let base = if feels_like < 0.0 {
+        "Bundle up, it's freezing"
+    } else if feels_like < 10.0 {
+        "Grab a warm jacket"
+    } else if feels_like < 18.0 {
+        "Light jacket weather"
+    } else if feels_like < 25.0 {
+        "Comfortable, no layers needed"
+    } else if feels_like < 33.0 {
+        "Light clothes, stay cool"
+    } else if feels_like < 40.0 {
+        "Stay hydrated, it's scorching"
+    } else {
+        "Dangerously hot, limit outdoor exposure"
+    };
+    let mut hint = base.to_string();
+    if rain_chance > 60.0 {
+        hint.push_str(" · Carry an umbrella");
+    }
+    if uv > 7.0 {
+        hint.push_str(" · Wear sunscreen");
+    }
+    hint
+}
+
 pub(crate) fn render_alerts(alerts: &[Alert]) {
     for alert in alerts {
         let color = match alert.severity.to_lowercase().as_str() {

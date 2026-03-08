@@ -21,6 +21,8 @@ pub fn render(loc: &Location, weather: &WeatherResponse, air: &Option<AirQuality
         "·".dimmed(),
         format!("Feels like {:.0}°", cur.apparent_temperature).dimmed()
     );
+    let today_rain = daily.precipitation_probability_max.first().copied().unwrap_or(0.0);
+    println!("      {}", clothing_hint(cur.apparent_temperature, today_rain, cur.uv_index).dimmed());
 
     println!();
     divider();
