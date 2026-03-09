@@ -2,7 +2,17 @@ use super::*;
 
 pub fn render(loc: &Location, weather: &WeatherResponse) {
     let hourly = &weather.hourly;
+    let daily = &weather.daily;
     let now = current_hour();
+
+    let rise_mins = daily
+        .sunrise
+        .first()
+        .map(|s| parse_time_mins(&format_time(s)));
+    let set_mins = daily
+        .sunset
+        .first()
+        .map(|s| parse_time_mins(&format_time(s)));
 
     println!();
     println!(
@@ -16,7 +26,10 @@ pub fn render(loc: &Location, weather: &WeatherResponse) {
     let end = (now + 24).min(hourly.time.len());
     for i in now..end {
         let hour = format_time(&hourly.time[i]);
-        let is_day = (i % 24) >= 6 && (i % 24) < 19;
+        let is_day = match (rise_mins, set_mins, parse_time_mins(&hour)) {
+            (Some(Some(r)), Some(Some(s)), Some(h)) => h >= r && h < s,
+            _ => (i % 24) >= 6 && (i % 24) < 19,
+        };
         let (icon, _, ic) = weather_icon(hourly.weather_code[i], is_day);
         let temp = hourly.temperature_2m[i];
         let rain = hourly.precipitation_probability[i];

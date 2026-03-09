@@ -104,9 +104,11 @@ pub fn render(loc: &Location, weather: &WeatherResponse, air: &Option<AirQuality
     println!("   {}", "Next 24 Hours".bold());
     println!();
 
+    let w = term_width();
     let now = current_hour();
     let step = 3;
-    let count = 8;
+    // Fit columns to terminal: each col is 6 chars + 3 prefix padding
+    let count = ((w.saturating_sub(3)) / 6).clamp(3, 8);
 
     let mut hours: Vec<String> = Vec::new();
     let mut temps: Vec<f64> = Vec::new();
@@ -172,6 +174,9 @@ pub fn render(loc: &Location, weather: &WeatherResponse, air: &Option<AirQuality
     println!("   {}", "7-Day".bold());
     println!();
 
+    let bar_width = if w >= 60 { w - 34 } else { 10 };
+    let show_rain = w >= 50;
+
     let days = 7.min(daily.time.len());
     let abs_min = daily.temperature_2m_min[..days]
         .iter()
@@ -189,9 +194,13 @@ pub fn render(loc: &Location, weather: &WeatherResponse, air: &Option<AirQuality
             daily.temperature_2m_max[i],
             abs_min,
             abs_max,
-            26,
+            bar_width,
         );
-        let rain = rain_indicator(daily.precipitation_probability_max[i]);
+        let rain = if show_rain {
+            rain_indicator(daily.precipitation_probability_max[i])
+        } else {
+            String::new()
+        };
         println!(
             "   {}  {} {} {} {} {}",
             day_name(&daily.time[i]).dimmed(),

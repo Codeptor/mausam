@@ -85,6 +85,11 @@ pub fn render(loc: &Location, weather: &WeatherResponse, air: &Option<AirQuality
     println!();
 
     // 3-day forecast
+    let w = term_width();
+    // Fixed parts: "   Mon  X  -XX°  ...bar...  -XX°  💧 XX%" ≈ w - 30 for bar
+    let bar_width = if w >= 60 { w - 38 } else { 10 };
+    let show_rain = w >= 50;
+
     let days = 3.min(daily.time.len());
     let abs_min = daily.temperature_2m_min[..days]
         .iter()
@@ -102,9 +107,13 @@ pub fn render(loc: &Location, weather: &WeatherResponse, air: &Option<AirQuality
             daily.temperature_2m_max[i],
             abs_min,
             abs_max,
-            22,
+            bar_width,
         );
-        let rain = rain_indicator(daily.precipitation_probability_max[i]);
+        let rain = if show_rain {
+            rain_indicator(daily.precipitation_probability_max[i])
+        } else {
+            String::new()
+        };
         println!(
             "   {}  {}  {}  {}  {}  {}",
             day_name(&daily.time[i]).dimmed(),

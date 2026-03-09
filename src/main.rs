@@ -66,6 +66,7 @@ async fn main() {
 
 async fn run() -> Result<()> {
     let cli = Cli::parse();
+    display::detect_term_width();
 
     // Respect NO_COLOR env var and --no-color flag
     let use_color = !cli.no_color && std::env::var("NO_COLOR").is_err();
@@ -240,7 +241,7 @@ async fn run() -> Result<()> {
             display::compact(&location, &weather, &air_quality);
 
             if i < cities.len() - 1 {
-                println!("  {}", "─".repeat(53).dimmed());
+                display::divider();
             }
         }
     } else {

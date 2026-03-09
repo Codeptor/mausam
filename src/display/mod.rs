@@ -1,9 +1,39 @@
-use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::atomic::{AtomicBool, AtomicU16, Ordering};
 
 use chrono::{NaiveDate, Timelike};
 use colored::*;
 
 use crate::types::*;
+
+static TERM_WIDTH: AtomicU16 = AtomicU16::new(80);
+
+pub fn detect_term_width() {
+    let w = get_term_width().unwrap_or(80);
+    TERM_WIDTH.store(w, Ordering::Relaxed);
+}
+
+pub(crate) fn term_width() -> usize {
+    TERM_WIDTH.load(Ordering::Relaxed) as usize
+}
+
+fn get_term_width() -> Option<u16> {
+    // Check COLUMNS env var first (works everywhere)
+    if let Ok(cols) = std::env::var("COLUMNS") {
+        if let Ok(w) = cols.parse::<u16>() {
+            if w > 0 {
+                return Some(w);
+            }
+        }
+    }
+    // Try `tput cols` as fallback
+    std::process::Command::new("tput")
+        .arg("cols")
+        .output()
+        .ok()
+        .and_then(|o| String::from_utf8(o.stdout).ok())
+        .and_then(|s| s.trim().parse::<u16>().ok())
+        .filter(|&w| w > 0)
+}
 
 static IMPERIAL: AtomicBool = AtomicBool::new(false);
 
@@ -292,6 +322,13 @@ pub(crate) fn format_time(iso: &str) -> String {
     }
 }
 
+pub(crate) fn parse_time_mins(t: &str) -> Option<u32> {
+    let mut parts = t.split(':');
+    let h: u32 = parts.next()?.parse().ok()?;
+    let m: u32 = parts.next()?.parse().ok()?;
+    Some(h * 60 + m)
+}
+
 pub(crate) fn day_name(date_str: &str) -> String {
     if let Ok(date) = NaiveDate::parse_from_str(date_str, "%Y-%m-%d") {
         date.format("%a").to_string()
@@ -308,37 +345,21 @@ pub(crate) fn is_daytime_now(daily: &DailyWeather) -> bool {
     if daily.sunrise.is_empty() || daily.sunset.is_empty() {
         return true;
     }
-    let rise = format_time(&daily.sunrise[0]);
-    let set = format_time(&daily.sunset[0]);
-    let parse = |t: &str| -> Option<u32> {
-        let mut parts = t.split(':');
-        let h: u32 = parts.next()?.parse().ok()?;
-        let m: u32 = parts.next()?.parse().ok()?;
-        Some(h * 60 + m)
-    };
+    let rise = parse_time_mins(&format_time(&daily.sunrise[0]));
+    let set = parse_time_mins(&format_time(&daily.sunset[0]));
     let now = chrono::Local::now();
     let now_mins = now.hour() * 60 + now.minute();
-    match (parse(&rise), parse(&set)) {
+    match (rise, set) {
         (Some(r), Some(s)) => now_mins >= r && now_mins < s,
         _ => true,
     }
 }
 
 pub(crate) fn daylight_str(rise: &str, set: &str) -> String {
-    let parse = |t: &str| -> Option<(u32, u32)> {
-        let mut parts = t.split(':');
-        let h = parts.next()?.parse().ok()?;
-        let m = parts.next()?.parse().ok()?;
-        Some((h, m))
-    };
-    if let (Some((rh, rm)), Some((sh, sm))) = (parse(rise), parse(set)) {
-        let rise_mins = rh * 60 + rm;
-        let set_mins = sh * 60 + sm;
+    if let (Some(rise_mins), Some(set_mins)) = (parse_time_mins(rise), parse_time_mins(set)) {
         if set_mins > rise_mins {
             let diff = set_mins - rise_mins;
-            let hours = diff / 60;
-            let mins = diff % 60;
-            return format!("{}h {}m daylight", hours, mins);
+            return format!("{}h {}m daylight", diff / 60, diff % 60);
         }
     }
     String::new()
@@ -437,11 +458,11 @@ pub(crate) fn render_alerts(alerts: &[Alert]) {
     }
 }
 
-pub(crate) fn divider() {
-    println!(
-        "  {}",
-        "╶─────────────────────────────────────────────────────╴".dimmed()
-    );
+pub fn divider() {
+    let w = term_width();
+    let inner = if w >= 60 { w - 6 } else { w.saturating_sub(4) };
+    let line = format!("╶{}╴", "─".repeat(inner));
+    println!("  {}", line.dimmed());
 }
 
 pub(crate) fn rain_indicator(pct: f64) -> String {
