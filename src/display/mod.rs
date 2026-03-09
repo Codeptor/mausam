@@ -283,6 +283,26 @@ pub(crate) fn current_hour() -> usize {
     chrono::Local::now().hour() as usize
 }
 
+pub(crate) fn is_daytime_now(daily: &DailyWeather) -> bool {
+    if daily.sunrise.is_empty() || daily.sunset.is_empty() {
+        return true;
+    }
+    let rise = format_time(&daily.sunrise[0]);
+    let set = format_time(&daily.sunset[0]);
+    let parse = |t: &str| -> Option<u32> {
+        let mut parts = t.split(':');
+        let h: u32 = parts.next()?.parse().ok()?;
+        let m: u32 = parts.next()?.parse().ok()?;
+        Some(h * 60 + m)
+    };
+    let now = chrono::Local::now();
+    let now_mins = now.hour() * 60 + now.minute();
+    match (parse(&rise), parse(&set)) {
+        (Some(r), Some(s)) => now_mins >= r && now_mins < s,
+        _ => true,
+    }
+}
+
 pub(crate) fn daylight_str(rise: &str, set: &str) -> String {
     let parse = |t: &str| -> Option<(u32, u32)> {
         let mut parts = t.split(':');

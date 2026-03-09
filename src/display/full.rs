@@ -4,7 +4,7 @@ pub fn render(loc: &Location, weather: &WeatherResponse, air: &Option<AirQuality
     let cur = &weather.current;
     let daily = &weather.daily;
     let hourly = &weather.hourly;
-    let (icon, desc) = weather_icon(cur.weather_code, cur.is_day != 0);
+    let (icon, desc) = weather_icon(cur.weather_code, is_daytime_now(daily));
 
     println!();
     render_alerts(&weather.alerts);

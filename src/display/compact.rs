@@ -3,7 +3,7 @@ use super::*;
 pub fn render(loc: &Location, weather: &WeatherResponse, air: &Option<AirQualityResponse>) {
     let cur = &weather.current;
     let daily = &weather.daily;
-    let (icon, desc) = weather_icon(cur.weather_code, cur.is_day != 0);
+    let (icon, desc) = weather_icon(cur.weather_code, is_daytime_now(daily));
 
     println!();
     render_alerts(&weather.alerts);
@@ -42,18 +42,21 @@ pub fn render(loc: &Location, weather: &WeatherResponse, air: &Option<AirQuality
     let c1 = 18usize;
     let c2 = 14usize;
 
+    let wind_text = format!(
+        "{:.0} {} {}",
+        cur.wind_speed_10m,
+        wind_label(),
+        wind_compass(cur.wind_direction_10m),
+    );
+    let hum_text = format!("{:.0}%", cur.relative_humidity_2m);
+    let uv_text = format!("UV {:.0} {}", cur.uv_index, uv_label_str(cur.uv_index));
     println!(
         "   {} {:<c1$} {} {:<c2$} {}",
         ICON_WIND.truecolor(150, 180, 210),
-        format!(
-            "{:.0} {} {}",
-            cur.wind_speed_10m,
-            wind_label(),
-            wind_compass(cur.wind_direction_10m),
-        ),
+        wind_text,
         ICON_HUMIDITY.truecolor(80, 170, 255),
-        format!("{:.0}%", cur.relative_humidity_2m),
-        format!("UV {:.0} {}", cur.uv_index, uv_label_str(cur.uv_index)),
+        hum_text,
+        uv_text,
     );
 
     if let Some(air) = air {
