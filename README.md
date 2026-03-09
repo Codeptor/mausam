@@ -6,12 +6,18 @@ Beautiful weather in your terminal.
 
 ![mausam full dashboard](screenshots/mausam-full.png)
 
+![mausam air quality](screenshots/mausam-aqi.png)
+
 ## Features
 
-- True color gradients and Nerd Font icons
+- True color gradients and Nerd Font weather icons
+- Context-aware icon colors (day/night/rain/snow/thunder/fog)
 - Current conditions with feels-like, clothing hint, UV index
+- Moon phase display with moonrise/moonset times
+- Sunrise/sunset with daylight duration
 - Wind speed with compass direction, visibility, dew point
 - 3-day and 7-day forecast with temperature range bars
+- 24-hour detailed forecast with sunrise-aware day/night icons
 - Hourly sparkline charts with rain probability
 - Air quality index (AQI) with PM2.5/PM10 breakdown
 - Weather alerts display
@@ -21,6 +27,8 @@ Beautiful weather in your terminal.
 - JSON output for scripting
 - Response caching (15 min TTL)
 - Imperial and metric units
+- Responsive layout adapts to terminal width
+- Shell completions (bash, zsh, fish, powershell)
 - `NO_COLOR` standard compliance
 - Interactive first-run setup
 - Cross-platform (Linux, macOS, Windows)
@@ -33,6 +41,23 @@ Beautiful weather in your terminal.
 cargo install mausam
 ```
 
+### Homebrew
+
+```sh
+brew tap codeptor/tap
+brew install mausam
+```
+
+### AUR (Arch Linux)
+
+```sh
+yay -S mausam
+```
+
+### GitHub Releases
+
+Pre-built binaries for Linux, macOS, and Windows are available on the [Releases](https://github.com/codeptor/mausam/releases) page.
+
 ### From source
 
 ```sh
@@ -40,10 +65,6 @@ git clone https://github.com/codeptor/mausam.git
 cd mausam
 cargo install --path .
 ```
-
-### GitHub Releases
-
-Pre-built binaries for Linux, macOS, and Windows are available on the [Releases](https://github.com/codeptor/mausam/releases) page.
 
 ## Setup
 
@@ -88,7 +109,21 @@ mausam -r                      # Skip cache, force refresh
       --set-key <KEY>    Save API key to config
       --set-city <CITY>  Save default city to config
       --units <UNITS>    Set preferred units (metric/imperial)
+      --completions <SHELL>  Generate shell completions (bash, zsh, fish, powershell)
       --config           Show current config
+```
+
+### Shell Completions
+
+```sh
+# Bash
+mausam --completions bash > ~/.local/share/bash-completion/completions/mausam
+
+# Zsh
+mausam --completions zsh > ~/.local/share/zsh/site-functions/_mausam
+
+# Fish
+mausam --completions fish > ~/.config/fish/completions/mausam.fish
 ```
 
 ## Configuration
