@@ -365,19 +365,36 @@ pub(crate) fn clothing_hint(feels_like: f64, rain_chance: f64, uv: f64) -> Strin
 }
 
 pub(crate) fn render_alerts(alerts: &[Alert]) {
+    let max_width = 50;
+    let mut seen = std::collections::HashSet::new();
+
     for alert in alerts {
+        let text = if !alert.event.is_empty() {
+            &alert.event
+        } else {
+            &alert.headline
+        };
+        if text.is_empty() || !seen.insert(text.clone()) {
+            continue;
+        }
         let color = match alert.severity.to_lowercase().as_str() {
             "extreme" => (255, 50, 50),
             "severe" => (255, 140, 0),
             _ => (230, 200, 0),
         };
+        let display: String = if text.chars().count() > max_width {
+            format!("{}…", text.chars().take(max_width).collect::<String>())
+        } else {
+            text.clone()
+        };
         println!(
-            "   {} {}",
-            "!".truecolor(color.0, color.1, color.2).bold(),
-            alert.headline.truecolor(color.0, color.1, color.2),
+            "   {} {}  {}",
+            "⚠".truecolor(color.0, color.1, color.2).bold(),
+            display.truecolor(color.0, color.1, color.2),
+            alert.severity.to_uppercase().dimmed(),
         );
     }
-    if !alerts.is_empty() {
+    if !seen.is_empty() {
         println!();
     }
 }
