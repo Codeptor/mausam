@@ -20,7 +20,12 @@ pub fn render(loc: &Location, weather: &WeatherResponse, air: &Option<AirQuality
         "      {} {} {}",
         desc.white(),
         "·".dimmed(),
-        format!("{} Feels like {:.0}°", temp_icon(cur.apparent_temperature), cur.apparent_temperature).dimmed()
+        format!(
+            "{} Feels like {:.0}°",
+            temp_icon(cur.apparent_temperature),
+            cur.apparent_temperature
+        )
+        .dimmed()
     );
     let today_rain = daily
         .precipitation_probability_max
