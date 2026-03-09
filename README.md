@@ -6,8 +6,6 @@ Beautiful weather in your terminal.
 
 ![mausam full dashboard](screenshots/mausam-full.png)
 
-![mausam air quality](screenshots/mausam-aqi.png)
-
 ## Features
 
 - True color gradients and Nerd Font weather icons
