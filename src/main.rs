@@ -202,10 +202,11 @@ async fn run() -> Result<()> {
             .filter(|s| !s.is_empty())
             .collect()
     } else {
-        vec![cfg
-            .default_city
-            .clone()
-            .unwrap_or_else(|| "auto:ip".to_string())]
+        vec![
+            cfg.default_city
+                .clone()
+                .unwrap_or_else(|| "auto:ip".to_string()),
+        ]
     };
 
     let units = cfg.units.as_deref().unwrap_or("metric");

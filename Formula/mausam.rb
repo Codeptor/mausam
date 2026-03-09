@@ -1,7 +1,7 @@
 class Mausam < Formula
   desc "Beautiful weather in your terminal"
   homepage "https://github.com/codeptor/mausam"
-  url "https://github.com/codeptor/mausam/archive/refs/tags/v1.0.0.tar.gz"
+  url "https://github.com/codeptor/mausam/archive/refs/tags/v1.0.1.tar.gz"
   license "MIT"
 
   depends_on "rust" => :build

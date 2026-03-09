@@ -18,13 +18,11 @@ pub(crate) fn term_width() -> usize {
 
 fn get_term_width() -> Option<u16> {
     // Check COLUMNS env var first (works everywhere)
-    if let Ok(cols) = std::env::var("COLUMNS") {
-        if let Ok(w) = cols.parse::<u16>() {
-            if w > 0 {
+    if let Ok(cols) = std::env::var("COLUMNS")
+        && let Ok(w) = cols.parse::<u16>()
+            && w > 0 {
                 return Some(w);
             }
-        }
-    }
     // Try `tput cols` as fallback
     std::process::Command::new("tput")
         .arg("cols")
@@ -46,19 +44,11 @@ pub(crate) fn is_imperial() -> bool {
 }
 
 pub(crate) fn wind_label() -> &'static str {
-    if is_imperial() {
-        "mph"
-    } else {
-        "km/h"
-    }
+    if is_imperial() { "mph" } else { "km/h" }
 }
 
 pub(crate) fn pressure_label() -> &'static str {
-    if is_imperial() {
-        "inHg"
-    } else {
-        "hPa"
-    }
+    if is_imperial() { "inHg" } else { "hPa" }
 }
 
 mod aqi;
@@ -109,11 +99,7 @@ pub(crate) fn moon_icon(phase: &str) -> &'static str {
 }
 
 pub(crate) fn visibility_label() -> &'static str {
-    if is_imperial() {
-        "mi"
-    } else {
-        "km"
-    }
+    if is_imperial() { "mi" } else { "km" }
 }
 
 pub(crate) fn wind_compass(deg: f64) -> &'static str {
@@ -370,12 +356,11 @@ pub(crate) fn is_daytime_now(daily: &DailyWeather) -> bool {
 }
 
 pub(crate) fn daylight_str(rise: &str, set: &str) -> String {
-    if let (Some(rise_mins), Some(set_mins)) = (parse_time_mins(rise), parse_time_mins(set)) {
-        if set_mins > rise_mins {
+    if let (Some(rise_mins), Some(set_mins)) = (parse_time_mins(rise), parse_time_mins(set))
+        && set_mins > rise_mins {
             let diff = set_mins - rise_mins;
             return format!("{}h {}m daylight", diff / 60, diff % 60);
         }
-    }
     String::new()
 }
 
