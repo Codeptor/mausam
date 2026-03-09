@@ -31,6 +31,10 @@ pub fn render(loc: &Location, weather: &WeatherResponse, air: &Option<AirQuality
                 "weather_code": weather.daily.weather_code[i],
                 "sunrise": weather.daily.sunrise.get(i),
                 "sunset": weather.daily.sunset.get(i),
+                "moonrise": weather.daily.moonrise.get(i),
+                "moonset": weather.daily.moonset.get(i),
+                "moon_phase": weather.daily.moon_phase.get(i),
+                "moon_illumination": weather.daily.moon_illumination.get(i),
                 "uv_index": weather.daily.uv_index_max.get(i),
             })
         })

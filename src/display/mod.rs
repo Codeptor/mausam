@@ -94,6 +94,20 @@ pub(crate) const ICON_LEAF: &str = "\u{f0312}";
 pub(crate) const ICON_EYE: &str = "\u{f06e}";
 pub(crate) const ICON_NIGHT_CLOUDY: &str = "\u{f0f31}";
 
+pub(crate) fn moon_icon(phase: &str) -> &'static str {
+    match phase {
+        "New Moon" => "\u{f0b75}",
+        "Waxing Crescent" => "\u{f0b72}",
+        "First Quarter" => "\u{f0b71}",
+        "Waxing Gibbous" => "\u{f0b70}",
+        "Full Moon" => "\u{f0b6f}",
+        "Waning Gibbous" => "\u{f0b74}",
+        "Last Quarter" => "\u{f0b73}",
+        "Waning Crescent" => "\u{f0b76}",
+        _ => "\u{f0b75}",
+    }
+}
+
 pub(crate) fn visibility_label() -> &'static str {
     if is_imperial() {
         "mi"

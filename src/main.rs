@@ -6,7 +6,7 @@ mod loading;
 mod types;
 
 use anyhow::Result;
-use clap::Parser;
+use clap::{CommandFactory, Parser};
 use colored::Colorize;
 
 #[derive(Parser)]
@@ -54,6 +54,10 @@ struct Cli {
     /// Show current config
     #[arg(long)]
     config: bool,
+
+    /// Generate shell completions (bash, zsh, fish, elvish, powershell)
+    #[arg(long, value_name = "SHELL")]
+    completions: Option<clap_complete::Shell>,
 }
 
 #[tokio::main]
@@ -67,6 +71,12 @@ async fn main() {
 async fn run() -> Result<()> {
     let cli = Cli::parse();
     display::detect_term_width();
+
+    // Shell completions
+    if let Some(shell) = cli.completions {
+        clap_complete::generate(shell, &mut Cli::command(), "mausam", &mut std::io::stdout());
+        return Ok(());
+    }
 
     // Respect NO_COLOR env var and --no-color flag
     let use_color = !cli.no_color && std::env::var("NO_COLOR").is_err();

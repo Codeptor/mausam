@@ -212,7 +212,7 @@ pub fn render(loc: &Location, weather: &WeatherResponse, air: &Option<AirQuality
         );
     }
 
-    // Sunrise/sunset + daylight
+    // Sunrise/sunset + moon
     if !daily.sunrise.is_empty() {
         let rise = format_time(&daily.sunrise[0]);
         let set = format_time(&daily.sunset[0]);
@@ -227,6 +227,20 @@ pub fn render(loc: &Location, weather: &WeatherResponse, air: &Option<AirQuality
             set.dimmed(),
             daylight.dimmed(),
         );
+
+        if let Some(phase) = daily.moon_phase.first() {
+            let illum = daily.moon_illumination.first().copied().unwrap_or(0);
+            let mrise = daily.moonrise.first().map(|s| s.as_str()).unwrap_or("—");
+            let mset = daily.moonset.first().map(|s| s.as_str()).unwrap_or("—");
+            println!(
+                "   {} {} {}     {} {}",
+                moon_icon(phase).truecolor(200, 200, 220),
+                format!("{phase} {illum}%").dimmed(),
+                "".dimmed(),
+                format!("↑{mrise}").dimmed(),
+                format!("↓{mset}").dimmed(),
+            );
+        }
     }
 
     println!();

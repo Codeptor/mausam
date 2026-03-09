@@ -108,6 +108,10 @@ fn convert_response(
     let mut d_sunset = Vec::new();
     let mut d_rain = Vec::new();
     let mut d_uv = Vec::new();
+    let mut d_moon_phase = Vec::new();
+    let mut d_moon_illum = Vec::new();
+    let mut d_moonrise = Vec::new();
+    let mut d_moonset = Vec::new();
 
     for day in &resp.forecast.forecastday {
         d_time.push(day.date.clone());
@@ -118,6 +122,10 @@ fn convert_response(
         d_sunset.push(time_12h_to_24h(&day.astro.sunset));
         d_rain.push(day.day.daily_chance_of_rain);
         d_uv.push(day.day.uv);
+        d_moon_phase.push(day.astro.moon_phase.clone());
+        d_moon_illum.push(day.astro.moon_illumination);
+        d_moonrise.push(time_12h_to_24h_optional(&day.astro.moonrise));
+        d_moonset.push(time_12h_to_24h_optional(&day.astro.moonset));
     }
 
     // Convert alerts
@@ -165,6 +173,10 @@ fn convert_response(
             sunset: d_sunset,
             precipitation_probability_max: d_rain,
             uv_index_max: d_uv,
+            moon_phase: d_moon_phase,
+            moon_illumination: d_moon_illum,
+            moonrise: d_moonrise,
+            moonset: d_moonset,
         },
         alerts,
     };
@@ -262,6 +274,15 @@ fn time_12h_to_24h(t: &str) -> String {
     };
 
     format!("{:02}:{:02}", hour_24, min)
+}
+
+// Convert "06:30 AM" → "06:30", but return "—" for "No moonrise" etc.
+fn time_12h_to_24h_optional(t: &str) -> String {
+    if t.starts_with("No ") || t.is_empty() {
+        "—".to_string()
+    } else {
+        time_12h_to_24h(t)
+    }
 }
 
 // Calculate US EPA AQI from PM2.5 concentration

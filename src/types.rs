@@ -50,6 +50,10 @@ pub struct DailyWeather {
     pub precipitation_probability_max: Vec<f64>,
     #[allow(dead_code)]
     pub uv_index_max: Vec<f64>,
+    pub moon_phase: Vec<String>,
+    pub moon_illumination: Vec<u32>,
+    pub moonrise: Vec<String>,
+    pub moonset: Vec<String>,
 }
 
 pub struct AirQualityResponse {
@@ -141,6 +145,10 @@ pub struct WapiDay {
 pub struct WapiAstro {
     pub sunrise: String,
     pub sunset: String,
+    pub moonrise: String,
+    pub moonset: String,
+    pub moon_phase: String,
+    pub moon_illumination: u32,
 }
 
 #[derive(Deserialize)]
