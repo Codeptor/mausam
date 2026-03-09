@@ -46,7 +46,7 @@ pub fn render(loc: &Location, weather: &WeatherResponse) {
 
         let is_now = i == now;
         let time_str = if is_now {
-            format!(" {} ", hour)
+            format!("  {}  ", hour)
                 .on_truecolor(60, 60, 80)
                 .white()
                 .bold()
