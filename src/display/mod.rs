@@ -61,8 +61,7 @@ pub(crate) const ICON_SUNSET: &str = "\u{f059b}";
 pub(crate) const ICON_DROP: &str = "\u{f043}";
 pub(crate) const ICON_GAUGE: &str = "\u{f0241}";
 pub(crate) const ICON_LEAF: &str = "\u{f0312}";
-pub(crate) const ICON_EYE: &str = "\u{f06e}"; // eye / visibility
-pub(crate) const ICON_DEWPOINT: &str = "\u{f0595}"; // water-percent
+pub(crate) const ICON_EYE: &str = "\u{f06e}";
 
 pub(crate) fn visibility_label() -> &'static str {
     if is_imperial() {
@@ -215,18 +214,18 @@ pub(crate) fn weather_icon(code: u32, is_day: bool) -> (&'static str, &'static s
     }
 }
 
-pub(crate) fn uv_label(uv: f64) -> ColoredString {
+pub(crate) fn uv_label_str(uv: f64) -> &'static str {
     let v = uv as u32;
     if v <= 2 {
-        "Low".green()
+        "Low"
     } else if v <= 5 {
-        "Moderate".yellow()
+        "Moderate"
     } else if v <= 7 {
-        "High".truecolor(255, 165, 0)
+        "High"
     } else if v <= 10 {
-        "Very High".red()
+        "Very High"
     } else {
-        "Extreme".magenta()
+        "Extreme"
     }
 }
 
@@ -247,10 +246,9 @@ pub(crate) fn aqi_color(aqi: f64) -> (u8, u8, u8) {
     }
 }
 
-pub(crate) fn aqi_label(aqi: f64) -> ColoredString {
-    let (r, g, b) = aqi_color(aqi);
+pub(crate) fn aqi_label_str(aqi: f64) -> &'static str {
     let v = aqi as u32;
-    let label = if v <= 50 {
+    if v <= 50 {
         "Good"
     } else if v <= 100 {
         "Moderate"
@@ -259,11 +257,10 @@ pub(crate) fn aqi_label(aqi: f64) -> ColoredString {
     } else if v <= 200 {
         "Unhealthy"
     } else if v <= 300 {
-        "Very Unhealthy"
+        "V.Unhealthy"
     } else {
         "Hazardous"
-    };
-    label.truecolor(r, g, b)
+    }
 }
 
 pub(crate) fn format_time(iso: &str) -> String {

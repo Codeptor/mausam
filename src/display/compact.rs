@@ -52,18 +52,21 @@ pub fn render(loc: &Location, weather: &WeatherResponse, air: &Option<AirQuality
         format!("{:.0}%", cur.relative_humidity_2m),
         "UV".dimmed(),
         format!("{:.0}", cur.uv_index).bold(),
-        uv_label(cur.uv_index),
+        uv_label_str(cur.uv_index).dimmed(),
     );
 
     if let Some(air) = air {
         let (r, g, b) = aqi_color(air.current.us_aqi);
         println!(
-            "   {} {} {} {}",
+            "   {} {} {}",
             ICON_LEAF.truecolor(r, g, b),
-            format!("AQI {:.0}", air.current.us_aqi)
-                .truecolor(r, g, b)
-                .bold(),
-            aqi_label(air.current.us_aqi),
+            format!(
+                "AQI {:.0} {}",
+                air.current.us_aqi,
+                aqi_label_str(air.current.us_aqi)
+            )
+            .truecolor(r, g, b)
+            .bold(),
             format!(
                 "· PM2.5 {:.0} · PM10 {:.0}",
                 air.current.pm2_5, air.current.pm10

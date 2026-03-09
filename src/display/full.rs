@@ -39,7 +39,10 @@ pub fn render(loc: &Location, weather: &WeatherResponse, air: &Option<AirQuality
     divider();
     println!();
 
-    // Metrics — 3-column grid
+    // Metrics — 3×3 grid (pad plain text, then color)
+    let c1 = 18usize; // column 1 width
+    let c2 = 14usize; // column 2 width
+
     let wind_text = format!(
         "{:.0} {} {}",
         cur.wind_speed_10m,
@@ -47,6 +50,7 @@ pub fn render(loc: &Location, weather: &WeatherResponse, air: &Option<AirQuality
         wind_compass(cur.wind_direction_10m),
     );
     let hum_text = format!("{:.0}%", cur.relative_humidity_2m);
+    let uv_text = format!("UV {:.0} {}", cur.uv_index, uv_label_str(cur.uv_index));
     let pressure_text = if is_imperial() {
         format!("{:.2} {}", cur.surface_pressure, pressure_label())
     } else {
@@ -56,39 +60,40 @@ pub fn render(loc: &Location, weather: &WeatherResponse, air: &Option<AirQuality
     let dew_text = format!("{:.0}° dew", cur.dewpoint_c);
 
     println!(
-        "   {} {:<16} {} {:<12} {} {} {}",
+        "   {} {:<c1$} {} {:<c2$} {}",
         ICON_WIND.truecolor(150, 180, 210),
         wind_text,
         ICON_HUMIDITY.truecolor(80, 170, 255),
         hum_text,
-        "UV".dimmed(),
-        format!("{:.0}", cur.uv_index).bold(),
-        uv_label(cur.uv_index),
+        uv_text,
     );
     println!(
-        "   {} {:<16} {} {:<12} {} {}",
+        "   {} {:<c1$} {} {:<c2$} {}",
         ICON_GAUGE.truecolor(150, 150, 170),
         pressure_text,
         ICON_EYE.truecolor(180, 180, 200),
         vis_text,
-        ICON_DEWPOINT.truecolor(100, 180, 220),
         dew_text.dimmed(),
     );
 
     if let Some(air) = air {
         let (r, g, b) = aqi_color(air.current.us_aqi);
-        println!(
-            "   {} {} {} {}",
-            ICON_LEAF.truecolor(r, g, b),
-            format!("AQI {:.0}", air.current.us_aqi)
-                .truecolor(r, g, b)
-                .bold(),
-            aqi_label(air.current.us_aqi),
+        let aqi_padded = format!(
+            "{:<c1$}",
             format!(
-                "· PM2.5 {:.0} · PM10 {:.0}",
-                air.current.pm2_5, air.current.pm10
+                "AQI {:.0} {}",
+                air.current.us_aqi,
+                aqi_label_str(air.current.us_aqi)
             )
-            .dimmed(),
+        );
+        let pm25_padded = format!("{:<c2$}", format!("PM2.5 {:.0}", air.current.pm2_5));
+        println!(
+            "   {} {} {} {} {}",
+            ICON_LEAF.truecolor(r, g, b),
+            aqi_padded.truecolor(r, g, b),
+            ICON_EYE.truecolor(r, g, b),
+            pm25_padded.dimmed(),
+            format!("PM10 {:.0}", air.current.pm10).dimmed(),
         );
     }
 

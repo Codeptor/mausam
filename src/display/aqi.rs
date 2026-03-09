@@ -36,7 +36,7 @@ pub fn render(loc: &Location, air: &AirQualityResponse) {
         bar,
         format!("{:.0}", cur.us_aqi).truecolor(r, g, b).bold()
     );
-    println!("   {}", aqi_label(cur.us_aqi));
+    println!("   {}", aqi_label_str(cur.us_aqi).truecolor(r, g, b));
 
     println!();
 
