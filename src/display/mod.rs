@@ -20,9 +20,10 @@ fn get_term_width() -> Option<u16> {
     // Check COLUMNS env var first (works everywhere)
     if let Ok(cols) = std::env::var("COLUMNS")
         && let Ok(w) = cols.parse::<u16>()
-            && w > 0 {
-                return Some(w);
-            }
+        && w > 0
+    {
+        return Some(w);
+    }
     // Try `tput cols` as fallback
     std::process::Command::new("tput")
         .arg("cols")
@@ -357,10 +358,11 @@ pub(crate) fn is_daytime_now(daily: &DailyWeather) -> bool {
 
 pub(crate) fn daylight_str(rise: &str, set: &str) -> String {
     if let (Some(rise_mins), Some(set_mins)) = (parse_time_mins(rise), parse_time_mins(set))
-        && set_mins > rise_mins {
-            let diff = set_mins - rise_mins;
-            return format!("{}h {}m daylight", diff / 60, diff % 60);
-        }
+        && set_mins > rise_mins
+    {
+        let diff = set_mins - rise_mins;
+        return format!("{}h {}m daylight", diff / 60, diff % 60);
+    }
     String::new()
 }
 
