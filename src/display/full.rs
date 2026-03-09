@@ -20,7 +20,7 @@ pub fn render(loc: &Location, weather: &WeatherResponse, air: &Option<AirQuality
         "      {} {} {}",
         desc.white(),
         "·".dimmed(),
-        format!("Feels like {:.0}°", cur.apparent_temperature).dimmed()
+        format!("{} Feels like {:.0}°", temp_icon(cur.apparent_temperature), cur.apparent_temperature).dimmed()
     );
     let today_rain = daily
         .precipitation_probability_max
@@ -237,8 +237,8 @@ pub fn render(loc: &Location, weather: &WeatherResponse, air: &Option<AirQuality
                 moon_icon(phase).truecolor(200, 200, 220),
                 format!("{phase} {illum}%").dimmed(),
                 "".dimmed(),
-                format!("↑{mrise}").dimmed(),
-                format!("↓{mset}").dimmed(),
+                format!("\u{e3c1} {mrise}").dimmed(),
+                format!("\u{e3c2} {mset}").dimmed(),
             );
         }
     }

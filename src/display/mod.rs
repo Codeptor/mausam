@@ -81,21 +81,37 @@ pub(crate) const ICON_SUNRISE: &str = "\u{f059c}";
 pub(crate) const ICON_SUNSET: &str = "\u{f059b}";
 pub(crate) const ICON_DROP: &str = "\u{f043}";
 pub(crate) const ICON_GAUGE: &str = "\u{f0241}";
-pub(crate) const ICON_LEAF: &str = "\u{f0312}";
+pub(crate) const ICON_LEAF: &str = "\u{f0d43}";
 pub(crate) const ICON_EYE: &str = "\u{f06e}";
 pub(crate) const ICON_NIGHT_CLOUDY: &str = "\u{f0f31}";
 
+pub(crate) fn temp_icon(temp: f64) -> &'static str {
+    if temp >= 35.0 {
+        "\u{ef2a}" // high
+    } else if temp >= 25.0 {
+        "\u{f2c7}" // full
+    } else if temp >= 15.0 {
+        "\u{f2c8}" // three-quarters
+    } else if temp >= 5.0 {
+        "\u{f2c9}" // half
+    } else if temp >= -5.0 {
+        "\u{f2ca}" // quarter
+    } else {
+        "\u{f2cb}" // empty
+    }
+}
+
 pub(crate) fn moon_icon(phase: &str) -> &'static str {
     match phase {
-        "New Moon" => "\u{f0b75}",
-        "Waxing Crescent" => "\u{f0b72}",
-        "First Quarter" => "\u{f0b71}",
-        "Waxing Gibbous" => "\u{f0b70}",
-        "Full Moon" => "\u{f0b6f}",
-        "Waning Gibbous" => "\u{f0b74}",
-        "Last Quarter" => "\u{f0b73}",
-        "Waning Crescent" => "\u{f0b76}",
-        _ => "\u{f0b75}",
+        "New Moon" => "\u{e38d}",
+        "Waxing Crescent" => "\u{e391}",
+        "First Quarter" => "\u{e394}",
+        "Waxing Gibbous" => "\u{e398}",
+        "Full Moon" => "\u{e39b}",
+        "Waning Gibbous" => "\u{e39e}",
+        "Last Quarter" => "\u{e3a2}",
+        "Waning Crescent" => "\u{e3a5}",
+        _ => "\u{e38d}",
     }
 }
 
