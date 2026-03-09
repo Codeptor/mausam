@@ -18,27 +18,39 @@ pub async fn fetch_all(
         FORECAST_URL, key, query
     );
 
-    let response = reqwest::get(&url).await.map_err(|e| {
-        if e.is_connect() || e.is_timeout() {
-            anyhow::anyhow!("Could not connect. Check your internet connection.")
-        } else {
-            anyhow::anyhow!("Network error: {}", e)
+    let mut last_status = 0u16;
+    let mut text = String::new();
+
+    for attempt in 0..3 {
+        if attempt > 0 {
+            tokio::time::sleep(std::time::Duration::from_secs(1)).await;
         }
-    })?;
 
-    let status = response.status();
-    let text = response.text().await.context("Failed to read response")?;
+        let response = reqwest::get(&url).await.map_err(|e| {
+            if e.is_connect() || e.is_timeout() {
+                anyhow::anyhow!("Could not connect. Check your internet connection.")
+            } else {
+                anyhow::anyhow!("Network error: {}", e)
+            }
+        })?;
 
-    if !status.is_success() {
-        match status.as_u16() {
+        last_status = response.status().as_u16();
+        text = response.text().await.context("Failed to read response")?;
+
+        if last_status < 500 {
+            break;
+        }
+    }
+
+    if last_status >= 400 {
+        match last_status {
             401 | 403 => anyhow::bail!("Invalid API key. Check your key at https://weatherapi.com"),
             429 => anyhow::bail!("API rate limit reached. Try again in a few minutes."),
             _ => {
-                // WeatherAPI returns error messages in JSON
                 if text.contains("No matching location") {
                     anyhow::bail!("City not found. Try a different spelling.");
                 }
-                anyhow::bail!("API error ({}). Try again later.", status.as_u16());
+                anyhow::bail!("API error ({}). Try again later.", last_status);
             }
         }
     }
