@@ -2,26 +2,11 @@
 
 Beautiful weather in your terminal.
 
-```
-   󰖙  37°                              Jaipur, India
-      Sunny · Feels like 35°
-      Light clothes, stay cool
-      3° warmer than tomorrow
+![mausam compact view](screenshots/mausam-compact.png)
 
-  ╶─────────────────────────────────────────────────────╴
+![mausam full dashboard](screenshots/mausam-full.png)
 
-   󰖝 12 km/h NW     󰖎 42%        UV 8 Very High
-   󰉁 1012 hPa       10 km       󰖕 18° dew
-   󰌒 AQI 88 Moderate · PM2.5 30 µg/m³ · PM10 118 µg/m³
-
-  ╶─────────────────────────────────────────────────────╴
-
-   Mon  󰖙   26°  ▃▄▅▆▇█▇▅▃   37°
-   Tue  󰖕   24°  ▂▃▄▅▆▇▅▃▂   34°
-   Wed  󰖙   25°  ▃▄▅▆▇█▆▄▂   36°
-
-   󰖜 06:32     󰖛 18:28     11h 56m daylight
-```
+![mausam air quality](screenshots/mausam-aqi.png)
 
 ## Features
 
