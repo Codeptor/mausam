@@ -17,7 +17,7 @@ pub fn render(loc: &Location, weather: &WeatherResponse) {
     for i in now..end {
         let hour = format_time(&hourly.time[i]);
         let is_day = (i % 24) >= 6 && (i % 24) < 19;
-        let (icon, _) = weather_icon(hourly.weather_code[i], is_day);
+        let (icon, _, ic) = weather_icon(hourly.weather_code[i], is_day);
         let temp = hourly.temperature_2m[i];
         let rain = hourly.precipitation_probability[i];
 
@@ -42,7 +42,14 @@ pub fn render(loc: &Location, weather: &WeatherResponse) {
             format!("  {}  ", hour).dimmed().to_string()
         };
 
-        println!("  {}{}  {}{}", time_str, icon, temp_colored(temp), rain_str,);
+        let colored_icon = icon.truecolor(ic.0, ic.1, ic.2);
+        println!(
+            "  {}{}  {}{}",
+            time_str,
+            colored_icon,
+            temp_colored(temp),
+            rain_str,
+        );
     }
 
     println!();

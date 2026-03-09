@@ -4,7 +4,7 @@ pub fn render(loc: &Location, weather: &WeatherResponse, air: &Option<AirQuality
     let cur = &weather.current;
     let daily = &weather.daily;
     let hourly = &weather.hourly;
-    let (icon, desc) = weather_icon(cur.weather_code, is_daytime_now(daily));
+    let (icon, desc, icon_color) = weather_icon(cur.weather_code, is_daytime_now(daily));
 
     println!();
     render_alerts(&weather.alerts);
@@ -12,7 +12,7 @@ pub fn render(loc: &Location, weather: &WeatherResponse, air: &Option<AirQuality
     // Header
     println!(
         "   {}  {}  {}",
-        icon.truecolor(255, 200, 80),
+        icon.truecolor(icon_color.0, icon_color.1, icon_color.2),
         temp_colored(cur.temperature_2m),
         format!("{}, {}", loc.name, loc.country).bold()
     );
@@ -183,7 +183,7 @@ pub fn render(loc: &Location, weather: &WeatherResponse, air: &Option<AirQuality
         .fold(f64::NEG_INFINITY, f64::max);
 
     for i in 0..days {
-        let (d_icon, _) = weather_icon(daily.weather_code[i], true);
+        let (d_icon, _, d_color) = weather_icon(daily.weather_code[i], true);
         let bar = gradient_bar(
             daily.temperature_2m_min[i],
             daily.temperature_2m_max[i],
@@ -195,7 +195,7 @@ pub fn render(loc: &Location, weather: &WeatherResponse, air: &Option<AirQuality
         println!(
             "   {}  {} {} {} {} {}",
             day_name(&daily.time[i]).dimmed(),
-            d_icon,
+            d_icon.truecolor(d_color.0, d_color.1, d_color.2),
             temp_colored_dim(daily.temperature_2m_min[i]),
             bar,
             temp_colored_dim(daily.temperature_2m_max[i]),

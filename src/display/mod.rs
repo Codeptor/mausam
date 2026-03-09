@@ -62,6 +62,7 @@ pub(crate) const ICON_DROP: &str = "\u{f043}";
 pub(crate) const ICON_GAUGE: &str = "\u{f0241}";
 pub(crate) const ICON_LEAF: &str = "\u{f0312}";
 pub(crate) const ICON_EYE: &str = "\u{f06e}";
+pub(crate) const ICON_NIGHT_CLOUDY: &str = "\u{f0f31}";
 
 pub(crate) fn visibility_label() -> &'static str {
     if is_imperial() {
@@ -187,30 +188,50 @@ pub(crate) fn center_ansi(colored: &str, visible_len: usize, width: usize) -> St
     format!("{}{}{}", " ".repeat(left), colored, " ".repeat(right))
 }
 
-pub(crate) fn weather_icon(code: u32, is_day: bool) -> (&'static str, &'static str) {
+const COLOR_DAY: (u8, u8, u8) = (255, 200, 80);
+const COLOR_NIGHT: (u8, u8, u8) = (150, 180, 230);
+const COLOR_CLOUD: (u8, u8, u8) = (180, 190, 210);
+const COLOR_RAIN: (u8, u8, u8) = (100, 160, 255);
+const COLOR_SNOW: (u8, u8, u8) = (200, 220, 255);
+const COLOR_THUNDER: (u8, u8, u8) = (255, 255, 100);
+const COLOR_FOG: (u8, u8, u8) = (160, 170, 180);
+
+pub(crate) fn weather_icon(code: u32, is_day: bool) -> (&'static str, &'static str, (u8, u8, u8)) {
     match code {
         0 => {
             if is_day {
-                (ICON_SUNNY, "Clear sky")
+                (ICON_SUNNY, "Clear sky", COLOR_DAY)
             } else {
-                (ICON_NIGHT, "Clear night")
+                (ICON_NIGHT, "Clear night", COLOR_NIGHT)
             }
         }
-        1 => (ICON_PARTLY, "Mainly clear"),
-        2 => (ICON_PARTLY, "Partly cloudy"),
-        3 => (ICON_CLOUDY, "Overcast"),
-        45 | 48 => (ICON_FOG, "Foggy"),
-        51 | 53 | 55 => (ICON_DRIZZLE, "Drizzle"),
-        56 | 57 => (ICON_DRIZZLE, "Freezing drizzle"),
-        61 | 63 | 65 => (ICON_RAINY, "Rain"),
-        66 | 67 => (ICON_RAINY, "Freezing rain"),
-        71 | 73 | 75 => (ICON_SNOWY, "Snowfall"),
-        77 => (ICON_SNOWY, "Snow grains"),
-        80..=82 => (ICON_RAINY, "Showers"),
-        85 | 86 => (ICON_SNOWY, "Snow showers"),
-        95 => (ICON_THUNDER, "Thunderstorm"),
-        96 | 99 => (ICON_THUNDER, "Thunderstorm"),
-        _ => (ICON_CLOUDY, "Unknown"),
+        1 => {
+            if is_day {
+                (ICON_PARTLY, "Mainly clear", COLOR_DAY)
+            } else {
+                (ICON_NIGHT, "Mainly clear", COLOR_NIGHT)
+            }
+        }
+        2 => {
+            if is_day {
+                (ICON_PARTLY, "Partly cloudy", COLOR_DAY)
+            } else {
+                (ICON_NIGHT_CLOUDY, "Partly cloudy", COLOR_NIGHT)
+            }
+        }
+        3 => (ICON_CLOUDY, "Overcast", COLOR_CLOUD),
+        45 | 48 => (ICON_FOG, "Foggy", COLOR_FOG),
+        51 | 53 | 55 => (ICON_DRIZZLE, "Drizzle", COLOR_RAIN),
+        56 | 57 => (ICON_DRIZZLE, "Freezing drizzle", COLOR_RAIN),
+        61 | 63 | 65 => (ICON_RAINY, "Rain", COLOR_RAIN),
+        66 | 67 => (ICON_RAINY, "Freezing rain", COLOR_RAIN),
+        71 | 73 | 75 => (ICON_SNOWY, "Snowfall", COLOR_SNOW),
+        77 => (ICON_SNOWY, "Snow grains", COLOR_SNOW),
+        80..=82 => (ICON_RAINY, "Showers", COLOR_RAIN),
+        85 | 86 => (ICON_SNOWY, "Snow showers", COLOR_SNOW),
+        95 => (ICON_THUNDER, "Thunderstorm", COLOR_THUNDER),
+        96 | 99 => (ICON_THUNDER, "Thunderstorm", COLOR_THUNDER),
+        _ => (ICON_CLOUDY, "Unknown", COLOR_CLOUD),
     }
 }
 
