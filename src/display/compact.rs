@@ -38,9 +38,12 @@ pub fn render(loc: &Location, weather: &WeatherResponse, air: &Option<AirQuality
     divider();
     println!();
 
-    // Metrics
+    // Metrics — 2×3 grid
+    let c1 = 18usize;
+    let c2 = 14usize;
+
     println!(
-        "   {} {:<14} {} {:<10} {} {} {}",
+        "   {} {:<c1$} {} {:<c2$} {}",
         ICON_WIND.truecolor(150, 180, 210),
         format!(
             "{:.0} {} {}",
@@ -50,28 +53,27 @@ pub fn render(loc: &Location, weather: &WeatherResponse, air: &Option<AirQuality
         ),
         ICON_HUMIDITY.truecolor(80, 170, 255),
         format!("{:.0}%", cur.relative_humidity_2m),
-        "UV".dimmed(),
-        format!("{:.0}", cur.uv_index).bold(),
-        uv_label_str(cur.uv_index).dimmed(),
+        format!("UV {:.0} {}", cur.uv_index, uv_label_str(cur.uv_index)),
     );
 
     if let Some(air) = air {
         let (r, g, b) = aqi_color(air.current.us_aqi);
-        println!(
-            "   {} {} {}",
-            ICON_LEAF.truecolor(r, g, b),
+        let aqi_padded = format!(
+            "{:<c1$}",
             format!(
                 "AQI {:.0} {}",
                 air.current.us_aqi,
                 aqi_label_str(air.current.us_aqi)
             )
-            .truecolor(r, g, b)
-            .bold(),
-            format!(
-                "· PM2.5 {:.0} · PM10 {:.0}",
-                air.current.pm2_5, air.current.pm10
-            )
-            .dimmed(),
+        );
+        let pm25_padded = format!("{:<c2$}", format!("PM2.5 {:.0}", air.current.pm2_5));
+        println!(
+            "   {} {} {} {} {}",
+            ICON_LEAF.truecolor(r, g, b),
+            aqi_padded.truecolor(r, g, b),
+            ICON_EYE.truecolor(r, g, b),
+            pm25_padded.dimmed(),
+            format!("PM10 {:.0}", air.current.pm10).dimmed(),
         );
     }
 
