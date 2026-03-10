@@ -2,7 +2,7 @@ class Mausam < Formula
   desc "Beautiful weather in your terminal"
   homepage "https://github.com/codeptor/mausam"
   url "https://github.com/codeptor/mausam/archive/refs/tags/v1.0.3.tar.gz"
-  sha256 ""  # update after release
+  sha256 "03966f9dbf3666249ab0aa46446bc40a16202ee3e748d5e24d4eb3c45a375df0"
   license "MIT"
 
   depends_on "rust" => :build
