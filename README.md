@@ -52,6 +52,12 @@ brew install mausam
 yay -S mausam
 ```
 
+### Quick Install (Linux/macOS)
+
+```sh
+curl -fsSL https://raw.githubusercontent.com/codeptor/mausam/master/install.sh | sh
+```
+
 ### GitHub Releases
 
 Pre-built binaries for Linux, macOS, and Windows are available on the [Releases](https://github.com/codeptor/mausam/releases) page.
