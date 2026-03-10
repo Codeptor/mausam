@@ -109,7 +109,7 @@ pub fn render(loc: &Location, weather: &WeatherResponse, air: &Option<AirQuality
     println!("   {}", "Next 24 Hours".bold());
     println!();
 
-    let w = term_width();
+    let w = term_width().min(80);
     let now = current_hour();
     let step = 3;
     // Fit columns to terminal: each col is 6 chars + 3 prefix padding

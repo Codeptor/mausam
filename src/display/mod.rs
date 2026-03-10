@@ -17,21 +17,20 @@ pub(crate) fn term_width() -> usize {
 }
 
 fn get_term_width() -> Option<u16> {
-    // Check COLUMNS env var first (works everywhere)
+    // ioctl TIOCGWINSZ on stdout — works in WSL2, subprocesses, everywhere
+    if let Some((terminal_size::Width(w), _)) = terminal_size::terminal_size()
+        && w > 0
+    {
+        return Some(w);
+    }
+    // Fallback: COLUMNS env var
     if let Ok(cols) = std::env::var("COLUMNS")
         && let Ok(w) = cols.parse::<u16>()
         && w > 0
     {
         return Some(w);
     }
-    // Try `tput cols` as fallback
-    std::process::Command::new("tput")
-        .arg("cols")
-        .output()
-        .ok()
-        .and_then(|o| String::from_utf8(o.stdout).ok())
-        .and_then(|s| s.trim().parse::<u16>().ok())
-        .filter(|&w| w > 0)
+    None
 }
 
 static IMPERIAL: AtomicBool = AtomicBool::new(false);
@@ -476,10 +475,73 @@ pub(crate) fn render_alerts(alerts: &[Alert]) {
 }
 
 pub fn divider() {
-    let w = term_width();
+    let w = term_width().min(80);
     let inner = if w >= 60 { w - 6 } else { w.saturating_sub(4) };
     let line = format!("╶{}╴", "─".repeat(inner));
     println!("  {}", line.dimmed());
+}
+
+// ─── Panel Drawing ───────────────────────────────────
+
+pub(crate) fn panel_top(title: &str, w: usize) {
+    let inner = w.saturating_sub(2);
+    if title.is_empty() {
+        println!("{}", format!("╭{}╮", "─".repeat(inner)).dimmed());
+    } else {
+        let t = format!(" {} ", title);
+        let t_len = t.chars().count();
+        let rest = inner.saturating_sub(t_len + 1);
+        println!(
+            "{}{}{}",
+            "╭─".dimmed(),
+            t.bold().white(),
+            format!("{}╮", "─".repeat(rest)).dimmed(),
+        );
+    }
+}
+
+pub(crate) fn panel_row(content: &str, w: usize) {
+    let visible_len = strip_ansi_len(content);
+    let inner = w.saturating_sub(4);
+    let pad = inner.saturating_sub(visible_len);
+    println!(
+        "{} {}{} {}",
+        "│".dimmed(),
+        content,
+        " ".repeat(pad),
+        "│".dimmed(),
+    );
+}
+
+pub(crate) fn panel_bottom(w: usize) {
+    let inner = w.saturating_sub(2);
+    println!("{}", format!("╰{}╯", "─".repeat(inner)).dimmed());
+}
+
+pub(crate) fn pad_ansi(s: &str, width: usize) -> String {
+    let vis = strip_ansi_len(s);
+    if vis >= width {
+        s.to_string()
+    } else {
+        format!("{}{}", s, " ".repeat(width - vis))
+    }
+}
+
+pub(crate) fn strip_ansi_len(s: &str) -> usize {
+    let mut count = 0;
+    let mut in_escape = false;
+    for c in s.chars() {
+        if c == '\x1b' {
+            in_escape = true;
+        } else if in_escape {
+            if c == 'm' {
+                in_escape = false;
+            }
+        } else {
+            count += 1;
+        }
+    }
+    count
 }
 
 pub(crate) fn rain_indicator(pct: f64) -> String {
