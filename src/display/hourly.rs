@@ -3,7 +3,7 @@ use super::*;
 pub fn render(loc: &Location, weather: &WeatherResponse) {
     let hourly = &weather.hourly;
     let daily = &weather.daily;
-    let now = current_hour();
+    let now = location_hour(&loc.localtime);
     let term_w = term_width();
 
     let rise_mins = daily

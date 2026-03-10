@@ -10,6 +10,7 @@ pub struct Location {
     pub latitude: f64,
     #[allow(dead_code)]
     pub longitude: f64,
+    pub localtime: String,
 }
 
 pub struct WeatherResponse {
@@ -90,6 +91,7 @@ pub struct WapiLocation {
     pub country: String,
     pub lat: f64,
     pub lon: f64,
+    pub localtime: String,
 }
 
 #[derive(Deserialize)]

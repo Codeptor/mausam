@@ -307,20 +307,32 @@ pub(crate) fn day_name(date_str: &str) -> String {
     }
 }
 
-pub(crate) fn current_hour() -> usize {
-    chrono::Local::now().hour() as usize
+/// Parse the location's localtime ("2024-01-01 10:30") into hour
+pub(crate) fn location_hour(localtime: &str) -> usize {
+    // Format: "2024-01-01 10:30"
+    localtime
+        .split_whitespace()
+        .nth(1)
+        .and_then(|t| t.split(':').next())
+        .and_then(|h| h.parse::<usize>().ok())
+        .unwrap_or(chrono::Local::now().hour() as usize)
 }
 
-pub(crate) fn is_daytime_now(daily: &DailyWeather) -> bool {
+/// Parse location's localtime into minutes since midnight
+fn location_mins(localtime: &str) -> Option<u32> {
+    let time_part = localtime.split_whitespace().nth(1)?;
+    parse_time_mins(time_part)
+}
+
+pub(crate) fn is_daytime_now(daily: &DailyWeather, localtime: &str) -> bool {
     if daily.sunrise.is_empty() || daily.sunset.is_empty() {
         return true;
     }
     let rise = parse_time_mins(&format_time(&daily.sunrise[0]));
     let set = parse_time_mins(&format_time(&daily.sunset[0]));
-    let now = chrono::Local::now();
-    let now_mins = now.hour() * 60 + now.minute();
-    match (rise, set) {
-        (Some(r), Some(s)) => now_mins >= r && now_mins < s,
+    let now_mins = location_mins(localtime);
+    match (rise, set, now_mins) {
+        (Some(r), Some(s), Some(n)) => n >= r && n < s,
         _ => true,
     }
 }

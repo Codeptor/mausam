@@ -81,6 +81,7 @@ fn convert_response(
         country: resp.location.country,
         latitude: resp.location.lat,
         longitude: resp.location.lon,
+        localtime: resp.location.localtime,
     };
 
     // Flatten hourly data from all forecast days

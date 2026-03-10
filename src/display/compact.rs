@@ -4,7 +4,8 @@ pub fn render(loc: &Location, weather: &WeatherResponse, air: &Option<AirQuality
     let cur = &weather.current;
     let daily = &weather.daily;
     let hourly = &weather.hourly;
-    let (icon, desc, icon_color) = weather_icon(cur.weather_code, is_daytime_now(daily));
+    let (icon, desc, icon_color) =
+        weather_icon(cur.weather_code, is_daytime_now(daily, &loc.localtime));
     let term_w = term_width();
 
     // ─── Phase 1: Pre-compute content & derive panel width ───
@@ -215,7 +216,7 @@ pub fn render(loc: &Location, weather: &WeatherResponse, air: &Option<AirQuality
     panel_bottom(w);
 
     // ─── Hourly Table ─────────────────────────────────
-    let now_h = current_hour();
+    let now_h = location_hour(&loc.localtime);
     let col_count = ((w.saturating_sub(6)) / 7).clamp(4, 10);
     let cw = 7usize;
 
