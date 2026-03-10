@@ -2,7 +2,7 @@
 
 Beautiful weather in your terminal.
 
-![mausam](screenshots/mausam-compact.png)
+![mausam](screenshots/mausam.png)
 
 ## Features
 
