@@ -53,13 +53,11 @@ pub(crate) fn pressure_label() -> &'static str {
 
 mod aqi;
 mod compact;
-mod full;
 mod hourly;
 mod json;
 
 pub use aqi::render as aqi_detail;
 pub use compact::render as compact;
-pub use full::render as full;
 pub use hourly::render as hourly;
 pub use json::render as json;
 
@@ -181,34 +179,6 @@ pub(crate) fn gradient_bar(min: f64, max: f64, abs_min: f64, abs_max: f64, width
     let remaining = width.saturating_sub(start + bar_len);
     result.push_str(&"─".dimmed().to_string().repeat(remaining));
     result
-}
-
-pub(crate) fn colored_sparkline(values: &[f64], spacing: usize) -> String {
-    let bars = ['▁', '▂', '▃', '▄', '▅', '▆', '▇', '█'];
-    if values.is_empty() {
-        return String::new();
-    }
-    let min = values.iter().copied().fold(f64::INFINITY, f64::min);
-    let max = values.iter().copied().fold(f64::NEG_INFINITY, f64::max);
-    let range = max - min;
-
-    values
-        .iter()
-        .map(|v| {
-            let idx = if range == 0.0 {
-                3
-            } else {
-                (((v - min) / range) * 7.0) as usize
-            };
-            let bar = bars[idx.min(7)];
-            let (r, g, b) = temp_to_rgb(*v);
-            let bar_str = format!("{}", bar).truecolor(r, g, b).bold().to_string();
-            let pad = spacing - 1;
-            let left = pad / 2;
-            let right = pad - left;
-            format!("{}{}{}", " ".repeat(left), bar_str, " ".repeat(right))
-        })
-        .collect()
 }
 
 pub(crate) fn center_ansi(colored: &str, visible_len: usize, width: usize) -> String {

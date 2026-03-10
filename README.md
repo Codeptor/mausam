@@ -2,9 +2,7 @@
 
 Beautiful weather in your terminal.
 
-![mausam compact view](screenshots/mausam-compact.png)
-
-![mausam full dashboard](screenshots/mausam-full.png)
+![mausam](screenshots/mausam-compact.png)
 
 ## Features
 
@@ -14,7 +12,7 @@ Beautiful weather in your terminal.
 - Moon phase display with moonrise/moonset times
 - Sunrise/sunset with daylight duration
 - Wind speed with compass direction, visibility, dew point
-- 3-day and 7-day forecast with temperature range bars
+- 7-day forecast with temperature range bars
 - 24-hour detailed forecast with sunrise-aware day/night icons
 - Hourly sparkline charts with rain probability
 - Air quality index (AQI) with PM2.5/PM10 breakdown
@@ -92,8 +90,6 @@ mausam london                  # Weather for London
 mausam new york                # Multi-word city names work naturally
 mausam delhi, india            # Disambiguate with country
 mausam london / tokyo / paris  # Compare multiple cities
-mausam -f                      # Full dashboard with hourly + 7-day
-mausam -f new delhi            # Full view for a specific city
 mausam -H                      # 24-hour detailed forecast
 mausam -a                      # Air quality details
 mausam -j                      # JSON output
@@ -104,7 +100,6 @@ mausam -r                      # Skip cache, force refresh
 
 ```
   [CITY]...              City name(s) — use / to separate multiple cities
-  -f, --full             Full dashboard with hourly and 7-day forecast
   -H, --hourly           Show hourly forecast
   -a, --aqi              Show air quality details
   -j, --json             Output as JSON

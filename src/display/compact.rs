@@ -306,7 +306,7 @@ pub fn render(loc: &Location, weather: &WeatherResponse, air: &Option<AirQuality
     panel_bottom(w);
 
     // ─── Forecast Panel ───────────────────────────────
-    let days = 3.min(daily.time.len());
+    let days = 7.min(daily.time.len());
     let bar_width = w.saturating_sub(36).max(8);
 
     let abs_min = daily.temperature_2m_min[..days]
@@ -318,7 +318,7 @@ pub fn render(loc: &Location, weather: &WeatherResponse, air: &Option<AirQuality
         .copied()
         .fold(f64::NEG_INFINITY, f64::max);
 
-    panel_top("3-Day Forecast", w);
+    panel_top(&format!("{}-Day Forecast", days), w);
 
     for i in 0..days {
         let (d_icon, _, d_color) = weather_icon(daily.weather_code[i], true);

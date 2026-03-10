@@ -15,10 +15,6 @@ struct Cli {
     /// City name(s) — use / to separate multiple cities (e.g. "new york / london")
     city: Vec<String>,
 
-    /// Full dashboard with hourly and 7-day forecast
-    #[arg(short, long)]
-    full: bool,
-
     /// Show hourly forecast
     #[arg(short = 'H', long)]
     hourly: bool,
@@ -289,8 +285,6 @@ async fn run() -> Result<()> {
         // Render
         if cli.json {
             display::json(&location, &weather, &air_quality);
-        } else if cli.full {
-            display::full(&location, &weather, &air_quality);
         } else if cli.hourly {
             display::hourly(&location, &weather);
         } else if cli.aqi {

@@ -20,8 +20,7 @@ cargo test            # tests (minimal currently)
 - `src/api.rs` — WeatherAPI fetch + response parsing
 - `src/types.rs` — All data structs (CurrentWeather, DailyWeather, HourlyWeather, etc.)
 - `src/display/mod.rs` — Shared display utils (icons, colors, terminal width, formatters)
-- `src/display/compact.rs` — Default compact view
-- `src/display/full.rs` — Full dashboard (-f)
+- `src/display/compact.rs` — Default view (7-day forecast, astronomy, hourly)
 - `src/display/hourly.rs` — Hourly forecast (-H)
 - `src/display/aqi.rs` — Air quality view (-a)
 - `src/display/json.rs` — JSON output (-j)
@@ -32,7 +31,9 @@ cargo test            # tests (minimal currently)
 ## Important Patterns
 - ANSI-aware alignment: pad plain text FIRST, then colorize
 - Icon colors are context-aware (day=yellow, night=blue, rain=blue, snow=white, etc.)
-- Terminal width: detected via COLUMNS env var + `tput cols` fallback
+- Terminal width: detected via `terminal_size` crate (ioctl TIOCGWINSZ), COLUMNS env fallback
+- Two-phase rendering: pre-compute content widths, then set all panels to the widest
+- Bordered panels: panel_top/panel_row/panel_bottom with dynamic width
 - Day/night detection: uses actual sunrise/sunset times from API, not hardcoded hours
 - reqwest uses rustls-tls (not native-tls) to avoid OpenSSL cross-compilation issues
 
