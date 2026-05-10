@@ -70,7 +70,7 @@ cargo install --path .
 
 ## Setup
 
-On first run, mausam will prompt you for a free [WeatherAPI](https://weatherapi.com/signup) key. Or configure it manually:
+On first run, mausam will prompt you for a free [WeatherAPI](https://www.weatherapi.com/signup) key. Or configure it manually:
 
 ```sh
 mausam --set-key YOUR_API_KEY
